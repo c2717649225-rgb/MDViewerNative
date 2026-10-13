@@ -122,6 +122,10 @@ try {
     }
     if ($Task -eq 'Publish') {
         $package = Join-Path $output 'MDViewerNative-win-x64.zip'
+        if (-not (Test-Path -LiteralPath $exe)) {
+            $contents = (Get-ChildItem -LiteralPath $publish -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name) -join ', '
+            throw "Publish output is missing: $exe. Publish directory contents: $contents"
+        }
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'THIRD-PARTY-NOTICES.txt') -Destination $publish -Force
         Compress-Archive -LiteralPath $exe, (Join-Path $publish 'THIRD-PARTY-NOTICES.txt') -DestinationPath $package -Force
         $checks = @{ desktopInput = $(if ($DesktopInput) { 'passed' } else { 'not-run' }); build = 'passed'; formatting = 'passed'; selftest = 'passed'; specification = 'passed'; corpus = 'passed'; ui = $(if ($Ui) { 'passed' } else { 'not-run' }); performance = $(if ($Performance) { 'passed' } else { 'not-run' }) }

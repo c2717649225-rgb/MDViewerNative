@@ -20,6 +20,13 @@ jobs:
           # spec corpus, whose trailing whitespace is semantic hard breaks.
           git diff-tree --check -m --first-parent -r HEAD
           if ($LASTEXITCODE -ne 0) { throw 'Changed-line whitespace check failed.' }
+      - name: Exclude the workspace from Windows Defender
+        shell: pwsh
+        run: |
+          # The runner's realtime scanner otherwise removes the freshly published
+          # unsigned NativeAOT executable before packaging can see it.
+          Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE -ErrorAction SilentlyContinue
+          Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction SilentlyContinue
       - name: Verify and publish NativeAOT
         shell: pwsh
         run: ./build.ps1 -Task Publish

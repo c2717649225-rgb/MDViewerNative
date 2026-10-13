@@ -1,9 +1,9 @@
 ﻿param([string]$ExePath, [string]$OutputDirectory)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
-if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MDViewerNative.exe' }
+if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MorningDesk.exe' }
 $ExePath = (Resolve-Path -LiteralPath $ExePath).Path
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before running this isolated host test.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before running this isolated host test.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 . (Join-Path $PSScriptRoot 'DesktopInputSupport.ps1') # FocusOwned only; no real input is sent.
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $projectRoot 'work\architecture-ui' }
@@ -24,13 +24,13 @@ try {
     $b = Join-Path $fixture 'b.md'
     # This scenario asserts LF preservation. Git autocrlf may change the checked-out corpus,
     # so establish the fixture's line ending explicitly rather than depending on the checkout.
-    $corpus = [IO.File]::ReadAllText((Join-Path $projectRoot 'MDViewerNative\全格式测试.md'))
+    $corpus = [IO.File]::ReadAllText((Join-Path $projectRoot 'MorningDesk\全格式测试.md'))
     [IO.File]::WriteAllText($a, $corpus.Replace("`r`n", "`n"))
     Assert-Host 'LF fixture is independent of Git checkout settings' (-not [IO.File]::ReadAllText($a).Contains("`r"))
     [IO.File]::WriteAllText($b, "# Bravo`n`nSecond document.`n")
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $a + '"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw "Host exited during startup: $($app.ExitCode)" }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw "Host exited during startup: $($app.ExitCode)" }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     [void][HostNative]::ShowWindow($script:window, 5)
     Capture '1-light'
     $beforeDirectory = New-Object HostNative+RECT

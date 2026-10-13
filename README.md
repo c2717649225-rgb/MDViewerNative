@@ -1,4 +1,4 @@
-# MDViewerNative
+# MorningDesk
 
 Windows 原生 Markdown 查看器与轻量编辑器。C# / .NET 10 LTS + Win32 + DirectWrite / Direct2D，支持 NativeAOT；图形资源创建由 `shim/mdnative.cpp` 提供，NativeAOT 发布时以静态库链接进单个 exe。
 
@@ -75,7 +75,7 @@ Windows 原生 Markdown 查看器与轻量编辑器。C# / .NET 10 LTS + Win32 +
 
 从源码构建和 NativeAOT 发布需要 Visual Studio C++ x64 工具链及 Windows SDK。脚本优先使用 `vswhere` 查找工具链，也支持未登记到安装器的标准安装目录；自定义安装可设置 `MDV_VCVARS_PATH`，指向 `vcvars64.bat`。无需新装第三方 NuGet 包，首次构建仍需要还原 .NET SDK/AOT 运行时包。
 
-默认产物位于 `artifacts/`，可用 `-OutputDirectory` 指定其他目录。重建原生 shim 时会同步刷新仓库中的 `engine/MDNative.dll`，开发、自测和 JIT 运行使用它；编译与链接使用 `/Brepro`，源码和工具链不变时字节一致。NativeAOT 发布把 shim 以静态库链接进 exe，发布目录 `artifacts/publish/win-x64/` 只有一个程序文件，若残留 `MDNative.dll` 打包会直接失败。分发包为 `artifacts/MDViewerNative-win-x64.zip`，内含程序与 `THIRD-PARTY-NOTICES.txt`，解压即可运行；未做代码签名，首次启动需在 Windows SmartScreen 中选择“仍要运行”。旧 `aot_build.bat` 和 `engine/aot-publish.cmd` 转调统一入口。
+默认产物位于 `artifacts/`，可用 `-OutputDirectory` 指定其他目录。重建原生 shim 时会同步刷新仓库中的 `engine/MDNative.dll`，开发、自测和 JIT 运行使用它；编译与链接使用 `/Brepro`，源码和工具链不变时字节一致。NativeAOT 发布把 shim 以静态库链接进 exe，发布目录 `artifacts/publish/win-x64/` 只有一个程序文件，若残留 `MDNative.dll` 打包会直接失败。分发包为 `artifacts/MorningDesk-win-x64.zip`，内含程序与 `THIRD-PARTY-NOTICES.txt`，解压即可运行；未做代码签名，首次启动需在 Windows SmartScreen 中选择“仍要运行”。旧 `aot_build.bat` 和 `engine/aot-publish.cmd` 转调统一入口。
 
 `.github/workflows/ci.yml` 在 Windows 上执行 `build.ps1 -Task Verify`：格式、自测、逐例规范与语料基线；推送分支或发起 PR 时触发。NativeAOT 打包需要完整工具链，托管 runner 上 SDK 解析不到 ILC 编译器包（`PublishAot=true` 但 `IlcCompilerPath` 为空，发布会静默退回 JIT），因此发布包在本机生成；性能门槛与窗口检查依赖本机与交互桌面，同样在本机显式运行。
 

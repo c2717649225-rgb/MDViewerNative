@@ -12,6 +12,7 @@ internal static class AppStorage
         get
         {
             string configured = Environment.GetEnvironmentVariable("MDV_CONFIG_DIR");
+            // 目录名沿用改名前的 MDViewerNative：更名不该让既有设置、书签与未保存草稿失联。
             return Path.GetFullPath(string.IsNullOrWhiteSpace(configured)
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MDViewerNative")
                 : configured);

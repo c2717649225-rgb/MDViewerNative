@@ -1,6 +1,6 @@
 ﻿param([Parameter(Mandatory=$true)][string]$ExePath)
 $ErrorActionPreference='Stop'
-if(Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue){throw 'A viewer is already running; test will not touch it.'}
+if(Get-Process -Name MorningDesk -ErrorAction SilentlyContinue){throw 'A viewer is already running; test will not touch it.'}
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 . (Join-Path $PSScriptRoot 'DesktopInputSupport.ps1')
 . (Join-Path $PSScriptRoot 'ClipboardTestSupport.ps1')
@@ -56,8 +56,8 @@ try {
     [IO.File]::WriteAllText($a,$source)
     [IO.File]::WriteAllText($b,"# Begin`n`n"+("paragraph`n`n"*100)+"# Destination`n`nTarget`n")
     $app=Start-Process -FilePath $ExePath -ArgumentList ('"'+$a+'"') -PassThru
-    Wait-Until {[HostNative]::Window([uint32]$app.Id,'MDViewerNative') -ne [IntPtr]::Zero}
-    $script:window=[HostNative]::Window([uint32]$app.Id,'MDViewerNative')
+    Wait-Until {[HostNative]::Window([uint32]$app.Id,'MorningDesk') -ne [IntPtr]::Zero}
+    $script:window=[HostNative]::Window([uint32]$app.Id,'MorningDesk')
     [void][HostNative]::ShowWindow($script:window,5);Wait-Until {(Text-Of $script:window).Contains('tools-alpha.md')}
     [void][DesktopInput]::FocusOwned($script:window,[uint32]$app.Id)
     [void][HostNative]::RedrawWindow($script:window,[IntPtr]::Zero,[IntPtr]::Zero,0x0185)

@@ -1,6 +1,6 @@
 ﻿param([Parameter(Mandatory=$true)][string]$ExePath, [string]$OutputDirectory)
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before navigation tests.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before navigation tests.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 $root = Split-Path $PSScriptRoot -Parent
 $fixture = Join-Path $root ('work\navigation-' + [guid]::NewGuid().ToString('N'))
@@ -28,8 +28,8 @@ function Open-Test([string]$Name, [string]$Source) {
     [IO.File]::WriteAllText($path, $Source)
     if ($script:app) { Stop-Test }
     $script:app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $path + '"') -PassThru
-    Wait-Until { if ($app.HasExited) { throw 'Navigation host exited.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Navigation host exited.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     # Wait for the actual source, not only window creation during startup.
     Wait-Until { (Text-Of $script:window).Contains($Name) }
     [void](Send $script:window 0)

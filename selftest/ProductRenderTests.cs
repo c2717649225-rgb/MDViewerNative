@@ -141,7 +141,7 @@ internal static class ProductRenderTests
         {
             string dir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "mdv-cache-doc-" + Guid.NewGuid().ToString("N"));
             System.IO.Directory.CreateDirectory(dir);
-            System.IO.File.Copy("../MDViewerNative/test_png.png", System.IO.Path.Combine(dir, "p.png"));
+            System.IO.File.Copy("../samples/test_png.png", System.IO.Path.Combine(dir, "p.png"));
             view.DocumentDirectory = dir;
             view.Load("![p](p.png)\n");
             var before = view.ImageCacheUsage;

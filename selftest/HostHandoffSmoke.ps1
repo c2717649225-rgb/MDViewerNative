@@ -1,8 +1,8 @@
 param([string]$ExePath)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
-if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MDViewerNative.exe' }
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before running handoff tests.' }
+if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MorningDesk.exe' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before running handoff tests.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 Add-Type -TypeDefinition @'
 using System;
@@ -25,8 +25,8 @@ try {
     $first = Join-Path $fixture 'initial.md'
     [IO.File]::WriteAllText($first, '# initial')
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $first + '"') -PassThru
-    Wait-Until { if ($app.HasExited) { throw 'Host exited at startup.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Host exited at startup.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     [void](Send $script:window 0)
     $expected = @('initial.md')
     # Stall only the host created by this test, so all requests arrive before consumption.

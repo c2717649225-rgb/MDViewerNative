@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$ExePath)
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before reading-state tests.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before reading-state tests.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 $root = Split-Path $PSScriptRoot -Parent
 $fixture = Join-Path $root ('work\reading-host-' + [guid]::NewGuid().ToString('N'))
@@ -13,8 +13,8 @@ function Position {
 function Open-Reader([string]$Expected, [string]$File = '') {
     if ($File.Length -gt 0) { $script:app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $File + '"') -PassThru -WindowStyle Hidden }
     else { $script:app = Start-Process -FilePath $ExePath -PassThru -WindowStyle Hidden }
-    Wait-Until { if ($app.HasExited) { throw 'Reading host exited.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Reading host exited.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     Wait-Until { (Text-Of $script:window).Contains($Expected) -and (Scroll-Extent) -gt 3000 }
     [void](Send $script:window 0)
     Start-Sleep -Milliseconds 300

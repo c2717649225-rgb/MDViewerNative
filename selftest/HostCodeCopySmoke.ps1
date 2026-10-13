@@ -2,7 +2,7 @@
 # A4 E5: code block copy button. Owned window messages only (no real keyboard or mouse, no focus steal).
 # The clipboard is snapshotted first and restored afterwards (a newer external clipboard is never overwritten).
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'A viewer is already running; test will not touch it.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'A viewer is already running; test will not touch it.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 . (Join-Path $PSScriptRoot 'ClipboardTestSupport.ps1')
 $projectRoot = Split-Path $PSScriptRoot -Parent
@@ -43,8 +43,8 @@ function Chip-Diff([Drawing.Bitmap]$A, [Drawing.Bitmap]$B) {
 try {
     [IO.File]::WriteAllText((Join-Path $env:MDV_CONFIG_DIR 'config.txt'), "chrome=classic`ntheme=light`ntoc=0`nfont=16`nhints=0`nwin=100,100,1000,700,0`n")
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $doc + '"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw 'Host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     Wait-Until { [void][HostNative]::ShowWindow($script:window, 4); [HostNative]::IsWindowVisible($script:window) }
     Wait-Until { (Text-Of $script:window).Contains('copy-alpha.md') }
     $script:scale = [HostNative]::GetDpiForWindow($script:window) / 96.0

@@ -4,6 +4,8 @@
 
 First published release. Windows x64, NativeAOT single-file build, MIT licensed.
 
+Product renamed to MorningDesk: the executable, window title, message-box captions, window class, release package names and file-association entries carry the new name. The C# namespace, the project file name and the `%APPDATA%/MDViewerNative` configuration directory are unchanged, so existing settings and drafts keep working.
+
 ### Added
 
 - "Serene Desk" visual system (stages A1–A5): unified light/dark palette and typography; toolbar with save dot, measured folding and a More overflow; text-only tabs with clean/dirty/active states; overlay find (floating panel on wide windows, bar on narrow ones) and a table-of-contents ruler that open without moving the body; bottom-edge reading progress line; three-line tables; code blocks with language label and copy button; narrow-window, keyboard, high-contrast and reduced-motion fallbacks.

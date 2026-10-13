@@ -366,7 +366,7 @@ internal static unsafe class Program
     {
         using var graphics = new RenderResources(1.0f);
         string big = File.ReadAllText("../engine/big20k.md");
-        string qf = File.ReadAllText("../MDViewerNative/全格式测试.md");
+        string qf = File.ReadAllText("../samples/全格式测试.md");
         double minBig = double.MaxValue, minQf = double.MaxValue;
         double[] bigSamples = new double[5], qfSamples = new double[5];
         for (int i = 0; i < 5; i++)
@@ -414,11 +414,11 @@ internal static unsafe class Program
         if (args.Length > 0 && args[0] == "--spec-record")
             return RunSpec(args.Length > 1 ? args[1] : "spec.txt", record: true);
         if (args.Length > 0 && args[0] == "--kp")
-            return RunKpDump(args.Length > 1 ? args[1] : "../MDViewerNative/全格式测试.md", args.Length > 2 ? args[2] : null,
+            return RunKpDump(args.Length > 1 ? args[1] : "../samples/全格式测试.md", args.Length > 2 ? args[2] : null,
                              args.Length > 3 && float.TryParse(args[3], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float kpWidth) ? kpWidth : 0f,
                              Array.IndexOf(args, "--lines") >= 0);
         if (args.Length > 0 && args[0] == "--dump")
-            return RunBlockDump(args.Length > 1 ? args[1] : "../MDViewerNative/全格式测试.md");
+            return RunBlockDump(args.Length > 1 ? args[1] : "../samples/全格式测试.md");
         if (args.Length > 0 && args[0] == "--font-probe")
         {
             Console.OutputEncoding = new System.Text.UTF8Encoding(false);
@@ -743,7 +743,7 @@ internal static unsafe class Program
 
         Console.WriteLine("── 渲染完整性(每块必须有可见输出) ──");
         {
-            foreach (string f in new[] { "../MDViewerNative/全格式测试.md", "../engine/test2.md", "../MDViewerNative/edge_torture.md", "../MDViewerNative/edge_empty.md", "../MDViewerNative/edge_oneline.md", "../MDViewerNative/edge_noeol.md" })
+            foreach (string f in new[] { "../samples/全格式测试.md", "../engine/test2.md", "../samples/edge_torture.md", "../samples/edge_empty.md", "../samples/edge_oneline.md", "../samples/edge_noeol.md" })
             {
                 if (!File.Exists(f)) { Check($"渲染/{System.IO.Path.GetFileName(f)} 存在", false, "文件缺失"); continue; }
                 using var d3 = new DocView();

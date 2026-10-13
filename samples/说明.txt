@@ -1,4 +1,4 @@
-﻿MD 查看器(原生版 MDViewerNative)
+﻿MorningDesk（原生版）
 ================================
 
 纯 Win32 + DirectWrite 原生实现,无运行时依赖,双击即用。
@@ -11,7 +11,7 @@
 
 文件
 ----
-- MDViewerNative.exe  主程序(约 1.6MB,NativeAOT)
+- MorningDesk.exe  主程序(约 1.6MB,NativeAOT)
 - MDNative.dll        D2D 资源创建辅助(约 104KB)
 - 注册文件关联.reg    将 .md / .markdown 关联到本程序(双击导入)
 - 卸载文件关联.reg    恢复为 WebView2 版关联

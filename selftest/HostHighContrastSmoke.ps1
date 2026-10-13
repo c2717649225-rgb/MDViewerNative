@@ -4,7 +4,7 @@ param([Parameter(Mandatory=$true)][string]$ExePath, [Parameter(Mandatory=$true)]
 # system colors and the current theme match the saved state.
 $ErrorActionPreference='Stop'
 if (-not $AllowSystemChange) { throw 'Explicit approval required; pass -AllowSystemChange.' }
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Existing reader left untouched.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Existing reader left untouched.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 . (Join-Path $PSScriptRoot 'DesktopInputSupport.ps1')
 Add-Type -TypeDefinition @'
@@ -58,8 +58,8 @@ try {
     $docs=@('alpha','bravo','charlie') | ForEach-Object { $p=Join-Path $fixture ($_+'.md'); [IO.File]::WriteAllText($p,"# $_`n`nHigh contrast paragraph for $_.`n"); $p }
     [IO.File]::WriteAllText((Join-Path $env:MDV_CONFIG_DIR 'config.txt'),"chrome=classic`ntheme=light`ntoc=0`nfont=16`nhints=0`nwin=120,120,1100,700,0`n")
     $app=Start-Process -FilePath $ExePath -ArgumentList ('"'+$docs[0]+'"') -PassThru
-    Wait-Until { if($app.HasExited){throw 'Host exited.'};[HostNative]::Window([uint32]$app.Id,'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window=[HostNative]::Window([uint32]$app.Id,'MDViewerNative')
+    Wait-Until { if($app.HasExited){throw 'Host exited.'};[HostNative]::Window([uint32]$app.Id,'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window=[HostNative]::Window([uint32]$app.Id,'MorningDesk')
     Wait-Until { (Text-Of $script:window).Contains('alpha.md') }
     Command 1002
     $script:editor=[HostNative]::FindWindowEx($script:window,[IntPtr]::Zero,'RICHEDIT50W',$null)

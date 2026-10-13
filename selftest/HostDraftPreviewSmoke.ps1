@@ -1,9 +1,9 @@
 ﻿param([string]$ExePath)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
-if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MDViewerNative.exe' }
+if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MorningDesk.exe' }
 $ExePath = (Resolve-Path -LiteralPath $ExePath).Path
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before running this isolated host test.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before running this isolated host test.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 $fixture = Join-Path ([IO.Path]::GetTempPath()) ('mdv-draft-preview-' + [guid]::NewGuid().ToString('N'))
 $config = Join-Path $fixture 'config'
@@ -50,8 +50,8 @@ try {
     [IO.File]::WriteAllText($a, $original)
     [IO.File]::WriteAllText($b, "# Bravo`n")
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $a + '"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw "Host exited: $($app.ExitCode)" }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero } { Host-State }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw "Host exited: $($app.ExitCode)" }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero } { Host-State }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     [void][HostNative]::ShowWindow($script:window, 5)
     Wait-Until { (Text-Of $script:window).Contains('alpha.md') } { Host-State }
     [void](Send $script:window 0)

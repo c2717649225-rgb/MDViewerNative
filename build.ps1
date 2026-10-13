@@ -17,7 +17,7 @@ $output = [IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 if ($Task -eq 'Publish') {
     # A failed attempt must never leave a previous candidate looking current.
-    foreach ($name in @('MDViewerNative-win-x64.zip', 'MDViewerNative-win-x64.zip.sha256', 'MDViewerNative-win-x64.zip.manifest.json')) {
+    foreach ($name in @('MorningDesk-win-x64.zip', 'MorningDesk-win-x64.zip.sha256', 'MorningDesk-win-x64.zip.manifest.json')) {
         $candidate = Join-Path $output $name
         if (Test-Path -LiteralPath $candidate) { Remove-Item -LiteralPath $candidate -Force }
     }
@@ -79,7 +79,7 @@ try {
         & powershell -NoProfile -ExecutionPolicy Bypass -File ./selftest/CorpusGolden.ps1 -Verify
         if ($LASTEXITCODE -ne 0) { throw 'Corpus regression verification failed.' }
     }
-    $exe = Join-Path $PSScriptRoot 'engine\bin\Release\net10.0-windows\MDViewerNative.exe'
+    $exe = Join-Path $PSScriptRoot 'engine\bin\Release\net10.0-windows\MorningDesk.exe'
     if ($Task -eq 'Publish') {
         $publish = Join-Path $output 'publish\win-x64'
         # Start clean so a leftover MDNative.dll from an older layout can never ship.
@@ -93,7 +93,7 @@ try {
         if ($SdkDirectory) { $ilcArgs += '-p:IlcUseEnvironmentalTools=true' }
         Invoke-Dotnet publish engine/MDViewerNative.csproj -c Release -r win-x64 '-p:PublishAot=true' @ilcArgs "-p:NativeShimPath=$shim" "-p:NativeShimLib=$shimLib" -o $publish
         if (Test-Path -LiteralPath (Join-Path $publish 'MDNative.dll')) { throw 'Publish must not ship MDNative.dll; the shim is linked into the exe.' }
-        $exe = Join-Path $publish 'MDViewerNative.exe'
+        $exe = Join-Path $publish 'MorningDesk.exe'
     }
     if ($Ui) {
         & ./selftest/HostSmoke.ps1 -ExePath $exe -OutputDirectory (Join-Path $output 'ui')
@@ -127,7 +127,7 @@ try {
         & ./selftest/HostTouchSmoke.ps1 -ExePath $exe -OutputDirectory (Join-Path $output 'ui') -AllowInput
     }
     if ($Task -eq 'Publish') {
-        $package = Join-Path $output 'MDViewerNative-win-x64.zip'
+        $package = Join-Path $output 'MorningDesk-win-x64.zip'
         if (-not (Test-Path -LiteralPath $exe)) {
             $contents = (Get-ChildItem -LiteralPath $publish -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name) -join ', '
             throw "Publish output is missing: $exe. Publish directory contents: $contents"

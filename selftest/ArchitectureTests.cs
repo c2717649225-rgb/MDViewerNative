@@ -987,8 +987,8 @@ internal static class ArchitectureTests
         string left = Path.Combine(directory, "left"), right = Path.Combine(directory, "right");
         Directory.CreateDirectory(left);
         Directory.CreateDirectory(right);
-        File.Copy("../MDViewerNative/test_png.png", Path.Combine(left, "image.png"));
-        File.Copy("../MDViewerNative/test_jpg.jpg", Path.Combine(right, "image.png"));
+        File.Copy("../samples/test_png.png", Path.Combine(left, "image.png"));
+        File.Copy("../samples/test_jpg.jpg", Path.Combine(right, "image.png"));
         using var first = new DocView { DocumentDirectory = left };
         using var second = new DocView { DocumentDirectory = right };
         first.Load("![left](image.png)");

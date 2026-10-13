@@ -164,7 +164,7 @@ internal static unsafe partial class Program
     static bool ConfirmDiscardInactive(int idx)
     {
         if (!Tabs[idx].Dirty || idx == ActiveTab) return true;
-        return Externs.MessageBoxW(_hwnd, "标签「" + Tabs[idx].Name + "」有未保存的修改,关闭将丢失。仍要关闭?", "MDViewerNative", 0x134 /*warning, YESNO, default No*/) == 6 /*IDYES*/;
+        return Externs.MessageBoxW(_hwnd, "标签「" + Tabs[idx].Name + "」有未保存的修改,关闭将丢失。仍要关闭?", "MorningDesk", 0x134 /*warning, YESNO, default No*/) == 6 /*IDYES*/;
     }
 
     static void CloseTabAt(int idx, bool approved = false)
@@ -463,7 +463,7 @@ internal static unsafe partial class Program
         catch (Exception ex)
         {
             AppLog.Error("save as", ex);
-            _ = Externs.MessageBoxW(_hwnd, "另存为失败: " + ex.Message, "MDViewerNative", 0);
+            _ = Externs.MessageBoxW(_hwnd, "另存为失败: " + ex.Message, "MorningDesk", 0);
             return false;
         }
     }
@@ -671,13 +671,13 @@ internal static unsafe partial class Program
         // 平滑滚动定时器:系统默认 ~15.6ms 分辨率会让 16ms tick 与 60Hz 合成产生 4Hz 拍频(缓出尾段 1px 步"1步/2步/0步"交替=微顿)
         _ = timeBeginPeriod(1);
         // Single instance: acknowledge an independent copied request, never overwrite a shared file.
-        using var mutex = new System.Threading.Mutex(true, "MDViewerNative.SingleInstance", out var created);
+        using var mutex = new System.Threading.Mutex(true, "MorningDesk.SingleInstance", out var created);
         if (!created)
         {
             IntPtr prev = IntPtr.Zero;
             for (int wi = 0; wi < 40; wi++)   // 首实例可能仍在建窗:最多等 ~2s,防快速连开文件时窗口堆积
             {
-                prev = FindWindowW("MDViewerNative", null);
+                prev = FindWindowW("MorningDesk", null);
                 if (prev != IntPtr.Zero) break;
                 System.Threading.Thread.Sleep(50);
             }
@@ -710,13 +710,13 @@ internal static unsafe partial class Program
             lpfnWndProc = (IntPtr)(delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr, IntPtr, IntPtr>)&WndProc,
             hInstance = hInst,
             hCursor = Externs.LoadCursorW(IntPtr.Zero, (IntPtr)32512),
-            lpszClassName = "MDViewerNative",
+            lpszClassName = "MorningDesk",
         };
         if (Externs.RegisterClassExW(in wc) == 0) return Marshal.GetLastWin32Error();
 
         RenderResources.UseChrome(State.Appearance.Desk);   // U6b：顶栏高在窗口创建前定下
         var initBounds = WindowGeometry.ResolveInitialBounds(_hasBounds, _winBounds, GetWorkArea());
-        _hwnd = Externs.CreateWindowExW(0, "MDViewerNative", "MD 查看器", WS_OVERLAPPEDWINDOW | (State.Appearance.Desk ? 0u : (uint)WS_VSCROLL) /*U5a：desk 用书签绳取代滚动条*/ | 0x02000000u /*WS_CLIPCHILDREN:父窗重绘不碰子控件,消除子控件闪烁*/,
+        _hwnd = Externs.CreateWindowExW(0, "MorningDesk", "MorningDesk", WS_OVERLAPPEDWINDOW | (State.Appearance.Desk ? 0u : (uint)WS_VSCROLL) /*U5a：desk 用书签绳取代滚动条*/ | 0x02000000u /*WS_CLIPCHILDREN:父窗重绘不碰子控件,消除子控件闪烁*/,
             initBounds.L, initBounds.T, initBounds.R - initBounds.L, initBounds.B - initBounds.T,
             default, default, hInst, default);
         if (_hwnd == IntPtr.Zero) return Marshal.GetLastWin32Error();
@@ -733,7 +733,7 @@ internal static unsafe partial class Program
         catch (Exception ex)
         {
             AppLog.Error("initialize graphics", ex);
-            _ = Externs.MessageBoxW(_hwnd, "图形初始化失败: " + ex.Message, "MDViewerNative", 0);
+            _ = Externs.MessageBoxW(_hwnd, "图形初始化失败: " + ex.Message, "MorningDesk", 0);
             return 1;
         }
 
@@ -1069,13 +1069,13 @@ internal static unsafe partial class Program
             // The user pressed Esc while a large document was being parsed or laid out.
             // TryOpen already disposed the candidate, so the previous document is intact.
             AppLog.Write("open document: cancelled by user");
-            _ = Externs.MessageBoxW(_hwnd, "已取消打开该文档。\n\n当前文档未被替换。", "MDViewerNative", 0x40);
+            _ = Externs.MessageBoxW(_hwnd, "已取消打开该文档。\n\n当前文档未被替换。", "MorningDesk", 0x40);
             return false;
         }
         catch (Exception ex)
         {
             AppLog.Error("open document", ex);
-            _ = Externs.MessageBoxW(_hwnd, "读取失败: " + ex.Message, "MDViewerNative", 0);
+            _ = Externs.MessageBoxW(_hwnd, "读取失败: " + ex.Message, "MorningDesk", 0);
             return false;
         }
         // Reopening the active path must preserve the live editor and its undo history.
@@ -1161,7 +1161,7 @@ internal static unsafe partial class Program
             catch (Exception ex)
             {
                 AppLog.Error("save document", ex);
-                _ = Externs.MessageBoxW(_hwnd, "保存失败: " + ex.Message, "MDViewerNative", 0);
+                _ = Externs.MessageBoxW(_hwnd, "保存失败: " + ex.Message, "MorningDesk", 0);
                 return false;
             }
         }
@@ -1743,7 +1743,7 @@ internal static unsafe partial class Program
         if (HasComposition) notice += " [输入法组词中，请先确认候选]";
         if (_imageTask != null) notice += " [图片加载中，再点图片可取消]";
         if (Toolbar.HasFocus) notice += " [工具栏：" + Toolbar.FocusDescription + "]";
-        Externs.SetWindowTextW(_hwnd, (HomeShown ? Home.TabTitle : (_dirty ? "*" : "") + _name) + " — MD 查看器" + (HomeShown ? "" : notice));
+        Externs.SetWindowTextW(_hwnd, (HomeShown ? Home.TabTitle : (_dirty ? "*" : "") + _name) + " — MorningDesk" + (HomeShown ? "" : notice));
         // The immutable tab snapshot was refreshed before PrepareToolbar above.
     }
 
@@ -1985,7 +1985,7 @@ internal static unsafe partial class Program
         catch (Exception ex)
         {
             AppLog.Error("open file dialog", ex);
-            _ = Externs.MessageBoxW(_hwnd, "打开失败: " + ex.Message, "MDViewerNative", 0);
+            _ = Externs.MessageBoxW(_hwnd, "打开失败: " + ex.Message, "MorningDesk", 0);
         }
     }
 }

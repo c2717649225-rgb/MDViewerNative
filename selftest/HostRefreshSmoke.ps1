@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$ExePath)
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before refresh tests.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before refresh tests.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 $root = Split-Path $PSScriptRoot -Parent
 $fixture = Join-Path $root ('work\refresh-host-' + [guid]::NewGuid().ToString('N'))
@@ -25,8 +25,8 @@ try {
     $path = Join-Path $fixture 'refresh.md'
     [IO.File]::WriteAllText($path, "# Original`n")
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $path + '"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw 'Refresh host exited.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Refresh host exited.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     Wait-Until { (Text-Of $script:window).Contains('refresh.md') }
     [void][HostNative]::ShowWindow($script:window, 4) # SW_SHOWNOACTIVATE
     Command 1002

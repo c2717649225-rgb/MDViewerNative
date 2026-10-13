@@ -3,7 +3,7 @@ param([Parameter(Mandatory=$true)][string]$ExePath, [Parameter(Mandatory=$true)]
 # only activates it; the next tap (close now visible) closes it. Touch goes through InjectTouchInput and the system touch-to-mouse promotion; no system setting changes.
 $ErrorActionPreference='Stop'
 if (-not $AllowInput) { throw 'An explicitly approved idle desktop is required; pass -AllowInput.' }
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Existing reader left untouched.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Existing reader left untouched.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 . (Join-Path $PSScriptRoot 'DesktopInputSupport.ps1')
 Add-Type -TypeDefinition @'
@@ -88,8 +88,8 @@ try {
     [IO.File]::WriteAllText($alpha,"# Alpha`nOriginal.`n");[IO.File]::WriteAllText($bravo,"# Bravo`nSecond.`n")
     [IO.File]::WriteAllText((Join-Path $env:MDV_CONFIG_DIR 'config.txt'),"chrome=classic`ntheme=light`ntoc=0`nfont=16`nhints=0`nwin=120,120,1100,700,0`n")
     $app=Start-Process -FilePath $ExePath -ArgumentList ('"'+$alpha+'"') -PassThru
-    Wait-Until { if($app.HasExited){throw 'Host exited.'};[HostNative]::Window([uint32]$app.Id,'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window=[HostNative]::Window([uint32]$app.Id,'MDViewerNative')
+    Wait-Until { if($app.HasExited){throw 'Host exited.'};[HostNative]::Window([uint32]$app.Id,'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window=[HostNative]::Window([uint32]$app.Id,'MorningDesk')
     Wait-Until { (Text-Of $script:window).Contains('alpha.md') }
     $handoff=Start-Process -FilePath $ExePath -ArgumentList ('"'+$bravo+'"') -PassThru -WindowStyle Hidden
     if(-not $handoff.WaitForExit(8000)){throw 'Handoff timeout.'};$handoff.Dispose()

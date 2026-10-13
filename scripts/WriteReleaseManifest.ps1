@@ -6,7 +6,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-$names = @('MDViewerNative.exe', 'THIRD-PARTY-NOTICES.txt')
+$names = @('MorningDesk.exe', 'THIRD-PARTY-NOTICES.txt')
 $archive = [IO.Compression.ZipFile]::OpenRead($Package)
 try {
     $entries = @($archive.Entries | ForEach-Object { $_.FullName } | Sort-Object)
@@ -50,7 +50,7 @@ $manifest = [ordered]@{
     sourceCommit = $commit
     sourceDirty = $dirty
     sdk = [string]$sdk
-    productVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $PublishDirectory 'MDViewerNative.exe')).ProductVersion
+    productVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $PublishDirectory 'MorningDesk.exe')).ProductVersion
     runtime = 'win-x64'
     checks = $verified
     package = [ordered]@{ name = [IO.Path]::GetFileName($Package); bytes = (Get-Item -LiteralPath $Package).Length; sha256 = $packageHash }

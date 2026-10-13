@@ -1,9 +1,9 @@
 ﻿param([string]$ExePath)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
-if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MDViewerNative.exe' }
+if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MorningDesk.exe' }
 $ExePath = (Resolve-Path -LiteralPath $ExePath).Path
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before running this isolated host test.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before running this isolated host test.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 $fixture = Join-Path ([IO.Path]::GetTempPath()) ('mdv-recovery-host-' + [guid]::NewGuid().ToString('N'))
 $configDirectory = Join-Path $fixture 'config'
@@ -17,8 +17,8 @@ $script:passed = 0
 function Draft-Count { return @(Get-ChildItem -LiteralPath $draftDirectory -Filter '*.json' -ErrorAction SilentlyContinue).Count }
 function Start-Host([int]$RecoveryChoice = 0) {
     $script:app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $source + '"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw 'Host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     if ($RecoveryChoice -ne 0) {
         Wait-Until { [HostNative]::Dialog([uint32]$app.Id) -ne [IntPtr]::Zero }
         Choose-Dialog ([HostNative]::Dialog([uint32]$app.Id)) $RecoveryChoice

@@ -1,7 +1,7 @@
 param([Parameter(Mandatory=$true)][string]$ExePath, [switch]$AllowInput)
 $ErrorActionPreference = 'Stop'
 if (-not $AllowInput) { throw 'This owned-window test injects real keyboard input. Opt in with -AllowInput on an idle desktop.' }
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before this test.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before this test.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 . (Join-Path $PSScriptRoot 'DesktopInputSupport.ps1')
 Add-Type -TypeDefinition @'
@@ -68,8 +68,8 @@ try {
     $original = '# Saved source'
     [IO.File]::WriteAllText($file, $original)
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $file + '"') -PassThru
-    Wait-Until { [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     [void][DesktopInput]::FocusOwned($script:window,[uint32]$app.Id)
     Wait-Until { [HostNative]::GetForegroundWindow() -eq $script:window }
     Command 1002

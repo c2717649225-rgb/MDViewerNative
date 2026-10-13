@@ -1,8 +1,8 @@
 ﻿param([string]$ExePath, [string]$OutputDirectory)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
-if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MDViewerNative.exe' }
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before running this isolated UI test.' }
+if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MorningDesk.exe' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before running this isolated UI test.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 . (Join-Path $PSScriptRoot 'DesktopInputSupport.ps1')
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $projectRoot 'work\ui-smoke' }
@@ -65,8 +65,8 @@ Console.WriteLine(document.Text);
     $path = Join-Path $fixture '阅读与记录.md'
     [IO.File]::WriteAllText($path, $source)
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $path + '"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw 'UI host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'UI host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     # A test process started hidden has its first ShowWindow replaced by SW_HIDE (STARTUPINFO); retry until visible.
     Wait-Until { [void][HostNative]::ShowWindow($script:window, 5); [HostNative]::IsWindowVisible($script:window) }
     $scale = [HostNative]::GetDpiForWindow($script:window) / 96.0

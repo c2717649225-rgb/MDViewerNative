@@ -1,9 +1,9 @@
 ﻿param([string]$ExePath)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
-if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MDViewerNative.exe' }
+if (-not $ExePath) { $ExePath = Join-Path $projectRoot 'engine\bin\Release\net10.0-windows\MorningDesk.exe' }
 $ExePath = (Resolve-Path -LiteralPath $ExePath).Path
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before running this isolated host test.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before running this isolated host test.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 $fixture = Join-Path ([IO.Path]::GetTempPath()) ('mdv-file-host-' + [guid]::NewGuid().ToString('N'))
 $configDirectory = Join-Path $fixture 'config'
@@ -63,8 +63,8 @@ try {
     [IO.File]::WriteAllText($c, "Existing Save As target")
     [IO.File]::WriteAllBytes($bad, [byte[]](0xEF, 0xBB, 0xBF, 0xC3, 0x28))
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $a + '"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw 'Host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     Wait-Until { (Text-Of $script:window).Contains('alpha.md') }
     [void][HostNative]::ShowWindow($script:window, 5)
     Command 1002
@@ -91,7 +91,7 @@ try {
     Assert-Host 'reopening active file preserves the live draft' ((Text-Of $script:editor) -eq $draft -and (Text-Of $script:window).StartsWith('*') -and [HostNative]::IsWindowVisible($script:editor))
     Handoff $bad
     $errorDialog = Wait-Dialog
-    Assert-Host 'invalid UTF8 reports a read failure before dirty guard' ((Text-Of $errorDialog) -eq 'MDViewerNative')
+    Assert-Host 'invalid UTF8 reports a read failure before dirty guard' ((Text-Of $errorDialog) -eq 'MorningDesk')
     Choose-Dialog $errorDialog 1
     Dialog-Finished
     Assert-Host 'read failure preserves editor draft and selection' ((Text-Of $script:editor) -eq $draft -and (Text-Of $script:window).StartsWith('*') -and (Send $script:editor 0x00B0) -eq $selection)

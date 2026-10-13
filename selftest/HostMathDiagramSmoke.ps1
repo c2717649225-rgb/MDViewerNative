@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$ExePath, [string]$OutputDirectory)
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before formula tests.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before formula tests.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 # Resolve the actual drawing assemblies on both .NET Framework and modern PowerShell.
 $drawingReferences = @([Drawing.Bitmap].Assembly.Location, [Drawing.Color].Assembly.Location) | Select-Object -Unique
@@ -104,8 +104,8 @@ try {
         [IO.File]::WriteAllText($path, $source)
         $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
         $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $path + '"') -PassThru -WindowStyle Hidden
-        Wait-Until { if ($app.HasExited) { throw 'Formula host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-        $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+        Wait-Until { if ($app.HasExited) { throw 'Formula host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+        $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
         Wait-Until { (Text-Of $script:window).Contains($name + '.md') }
         [void][HostNative]::ShowWindow($script:window, 4)
         $scale = [HostNative]::GetDpiForWindow($script:window) / 96.0

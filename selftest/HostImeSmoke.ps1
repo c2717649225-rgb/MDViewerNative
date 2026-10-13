@@ -1,7 +1,7 @@
 ﻿param([Parameter(Mandatory=$true)][string]$ExePath,[switch]$AllowInput)
 $ErrorActionPreference='Stop'
 if (-not $AllowInput) { throw 'Real IME input requires -AllowInput and an owned idle desktop.' }
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'A viewer is already running; not touching it.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'A viewer is already running; not touching it.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 . (Join-Path $PSScriptRoot 'DesktopInputSupport.ps1')
 $fixture=Join-Path ([IO.Path]::GetTempPath()) ('mdv-ime-'+[guid]::NewGuid().ToString('N'))
@@ -26,8 +26,8 @@ try {
     $original="base`n"
     [IO.File]::WriteAllText($file,$original);[IO.File]::WriteAllText($other,'other')
     $app=Start-Process -FilePath $ExePath -ArgumentList ('"'+$file+'"') -PassThru
-    Wait-Until { [HostNative]::Window([uint32]$app.Id,'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window=[HostNative]::Window([uint32]$app.Id,'MDViewerNative')
+    Wait-Until { [HostNative]::Window([uint32]$app.Id,'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window=[HostNative]::Window([uint32]$app.Id,'MorningDesk')
     [void][HostNative]::ShowWindow($script:window,5)
     Wait-Until { (Text-Of $script:window).Contains('ime-alpha.md') }
     $child=Start-Process -FilePath $ExePath -ArgumentList ('"'+$other+'"') -PassThru -WindowStyle Hidden

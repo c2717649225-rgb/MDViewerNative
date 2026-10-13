@@ -1,14 +1,14 @@
-﻿MD 查看器 1.0.0（Windows 64 位）
+﻿MorningDesk 1.0.0（Windows 64 位）
 ================================
 
 一个安静、轻量的 Markdown 阅读器，也能直接编辑。
 
 【怎么用】
-1. 程序只有一个文件：MDViewerNative.exe。放在任意位置都行（桌面、D 盘、U 盘，
+1. 程序只有一个文件：MorningDesk.exe。放在任意位置都行（桌面、D 盘、U 盘，
    路径里有中文、空格也没关系），双击就能用。
 2. 不用安装，也不用装 .NET 之类的运行库。
 3. 打开文档：把 .md 文件拖进窗口；或按 Ctrl+O 选择文件；
-   也可以在 .md 文件上右键 → 打开方式 → 选择 MDViewerNative.exe
+   也可以在 .md 文件上右键 → 打开方式 → 选择 MorningDesk.exe
    （勾选“始终使用此应用”后，以后双击 .md 就会用它打开）。
 
 【第一次打开时如果弹出蓝色的“Windows 已保护你的电脑”】
@@ -30,7 +30,7 @@
 Windows 10 或 Windows 11，64 位。
 
 【卸载】
-直接删除 MDViewerNative.exe 即可。程序不写注册表、不装服务。
+直接删除 MorningDesk.exe 即可。程序不写注册表、不装服务。
 如果还想清掉设置、书签和草稿，再删除这个文件夹：
   %APPDATA%\MDViewerNative
 （在资源管理器地址栏粘贴上面这一行后回车就能打开）

@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$ExePath, [Parameter(Mandatory=$true)][string]$OutputDirectory)
 $ErrorActionPreference='Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'An existing reader must be left untouched.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'An existing reader must be left untouched.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 # A2-B3 display names in the real host: toolbar focus descriptions, the native
 # locate list and screenshots. Owned window messages only; no real keyboard,
@@ -74,8 +74,8 @@ try {
     [IO.File]::WriteAllText($amp,$long); $sources[$amp]=$long
     [IO.File]::WriteAllText((Join-Path $env:MDV_CONFIG_DIR 'config.txt'),"chrome=classic`ntheme=light`ntoc=0`nfont=16`nhints=0`nwin=120,120,1100,800,0`n")
     $app=Start-Process -FilePath $ExePath -ArgumentList ('"'+$readme1+'"') -PassThru
-    Wait-Until { if ($app.HasExited) {throw 'Tab-name host exited.'}; [HostNative]::Window([uint32]$app.Id,'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window=[HostNative]::Window([uint32]$app.Id,'MDViewerNative')
+    Wait-Until { if ($app.HasExited) {throw 'Tab-name host exited.'}; [HostNative]::Window([uint32]$app.Id,'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window=[HostNative]::Window([uint32]$app.Id,'MorningDesk')
     Wait-Until { (Text-Of $script:window).StartsWith('README.md') }
     Handoff $readme2; Handoff $notes; Handoff $amp
     $script:scale=[HostNative]::GetDpiForWindow($script:window)/96.0

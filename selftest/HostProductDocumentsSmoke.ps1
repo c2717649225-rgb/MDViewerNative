@@ -5,7 +5,7 @@ $ErrorActionPreference='Stop'
 # still be listed for a moment. Wait briefly for those to drain before refusing.
 $deadline=(Get-Date).AddSeconds(10)
 while($true){
-  $existing=@(Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue)
+  $existing=@(Get-Process -Name MorningDesk -ErrorAction SilentlyContinue)
   if($existing.Count -eq 0){break}
   if((Get-Date) -ge $deadline){
     throw ('An existing viewer will not be touched. (pids: '+(($existing|ForEach-Object{$_.Id}) -join ',')+')')
@@ -28,8 +28,8 @@ try {
  $a=Join-Path $fixture 'a.md';$b=Join-Path $fixture 'b.md'
  [IO.File]::WriteAllText($a,"# Alpha`n");[IO.File]::WriteAllText($b,"# Bravo`n")
  $app=Start-Process -FilePath $ExePath -ArgumentList ('"'+$a+'"') -PassThru
- Wait-Until {[HostNative]::Window([uint32]$app.Id,'MDViewerNative') -ne [IntPtr]::Zero}
- $script:window=[HostNative]::Window([uint32]$app.Id,'MDViewerNative');[void][HostNative]::ShowWindow($script:window,5)
+ Wait-Until {[HostNative]::Window([uint32]$app.Id,'MorningDesk') -ne [IntPtr]::Zero}
+ $script:window=[HostNative]::Window([uint32]$app.Id,'MorningDesk');[void][HostNative]::ShowWindow($script:window,5)
  Wait-Until {(Text-Of $script:window).Contains('a.md')}
  Command 1002;$script:editor=Source-Editor
  Edit-Text "alpha draft`r`n";Edit-Text "alpha second`r`n"

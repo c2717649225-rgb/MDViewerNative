@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$ExePath, [Parameter(Mandatory=$true)][string]$OutputDirectory, [ValidateSet('light','dark')][string]$Theme='light')
 $ErrorActionPreference='Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'An existing reader must be left untouched.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'An existing reader must be left untouched.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 # A2-B5 integration matrix in the real host: one sample set, 1/2/20 tabs x
 # minimum/640/960/1280 window widths, per-state screenshots and focus-sequence
@@ -77,8 +77,8 @@ try {
     foreach ($f in $files) { $s="# "+[IO.Path]::GetFileName($f)+"`n`nMatrix fixture body.`n"; [IO.File]::WriteAllText($f,$s); $sources[$f]=$s }
     [IO.File]::WriteAllText((Join-Path $env:MDV_CONFIG_DIR 'config.txt'),"chrome=classic`ntheme=$Theme`ntoc=0`nfont=16`nhints=0`nwin=120,120,1100,760,0`n")
     $app=Start-Process -FilePath $ExePath -ArgumentList ('"'+$files[0]+'"') -PassThru
-    Wait-Until { if ($app.HasExited) {throw 'Matrix host exited.'}; [HostNative]::Window([uint32]$app.Id,'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window=[HostNative]::Window([uint32]$app.Id,'MDViewerNative')
+    Wait-Until { if ($app.HasExited) {throw 'Matrix host exited.'}; [HostNative]::Window([uint32]$app.Id,'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window=[HostNative]::Window([uint32]$app.Id,'MorningDesk')
     Wait-Until { (Text-Of $script:window).StartsWith('alpha.md') }
     $script:scale=[HostNative]::GetDpiForWindow($script:window)/96.0
     Write-Output ("MATRIX_THEME=$Theme DPI="+[HostNative]::GetDpiForWindow($script:window))

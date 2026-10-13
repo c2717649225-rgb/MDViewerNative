@@ -15,9 +15,9 @@ function Assert-Release([string]$Name, [bool]$Pass) {
     Write-Output "PASS release/$Name"
 }
 try {
-    Copy-Item -LiteralPath (Join-Path $source 'MDViewerNative.exe') -Destination $publish
+    Copy-Item -LiteralPath (Join-Path $source 'MorningDesk.exe') -Destination $publish
     Copy-Item -LiteralPath (Join-Path $root 'THIRD-PARTY-NOTICES.txt') -Destination $publish
-    Compress-Archive -LiteralPath (Join-Path $publish 'MDViewerNative.exe'), (Join-Path $publish 'THIRD-PARTY-NOTICES.txt') -DestinationPath $package
+    Compress-Archive -LiteralPath (Join-Path $publish 'MorningDesk.exe'), (Join-Path $publish 'THIRD-PARTY-NOTICES.txt') -DestinationPath $package
     & $writer -ProjectRoot $root -Package $package -PublishDirectory $publish
     $manifest = Get-Content -LiteralPath ($package + '.manifest.json') -Raw | ConvertFrom-Json
     Assert-Release 'unknown checks are not claimed passed' ($manifest.checks.selftest -eq 'not-run' -and $manifest.checks.ui -eq 'not-run' -and $manifest.checks.desktopInput -eq 'not-run' -and $manifest.checks.packageContent -eq 'passed')
@@ -45,7 +45,7 @@ try {
     catch { if ($_.Exception.Message -notlike 'Release ZIP must contain*') { throw }; $rejected = $true }
     Assert-Release 'extra ZIP entry rejected' $rejected
     Remove-Item -LiteralPath $package -Force
-    Compress-Archive -LiteralPath (Join-Path $publish 'MDViewerNative.exe') -DestinationPath $package
+    Compress-Archive -LiteralPath (Join-Path $publish 'MorningDesk.exe') -DestinationPath $package
     $rejected = $false
     try { & $writer -ProjectRoot $root -Package $package -PublishDirectory $publish }
     catch { if ($_.Exception.Message -notlike 'Release ZIP must contain*') { throw }; $rejected = $true }

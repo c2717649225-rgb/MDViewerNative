@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$ExePath)
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before image tests.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before image tests.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 $root = Split-Path $PSScriptRoot -Parent
 $fixture = Join-Path $root ('work\image-host-' + [guid]::NewGuid().ToString('N'))
@@ -20,8 +20,8 @@ try {
     $path = Join-Path $fixture 'rich.md'
     [IO.File]::WriteAllText($path, "- # Nested content`n`n  ![local](test%20image.png)`n`n  | key | value |`n  | --- | --- |`n  | alpha | bravo |`n`n![remote](https://example.invalid/never-requested.png)`n")
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $path + '"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw 'Image host exited.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Image host exited.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     Wait-Until { (Text-Of $script:window).Contains('rich.md') }
     [void][HostNative]::ShowWindow($script:window, 4)
     Capture 'nested-image-table'

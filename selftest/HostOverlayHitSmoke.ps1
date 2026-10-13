@@ -3,7 +3,7 @@ param([Parameter(Mandatory=$true)][string]$ExePath, [string]$OutputDirectory)
 # Every "blocked" click is followed by a control click at the same point once the overlay is gone, which must
 # follow the link underneath; this proves the point really covers link text.
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'A viewer is already running; test will not touch it.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'A viewer is already running; test will not touch it.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 $projectRoot = Split-Path $PSScriptRoot -Parent
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $projectRoot 'work\overlay-hit-smoke' }
@@ -21,8 +21,8 @@ function Launch {
     if ($script:app -and -not $script:app.HasExited) { Stop-Process -Id $script:app.Id -Force; [void]$script:app.WaitForExit(4000) }
     [IO.File]::WriteAllText((Join-Path $env:MDV_CONFIG_DIR 'config.txt'), "chrome=classic`ntheme=light`ntoc=0`nfont=16`nhints=0`nwin=100,100,900,700,0`n")
     $script:app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $a + '"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($script:app.HasExited) { throw 'Host exited during startup.' }; [HostNative]::Window([uint32]$script:app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$script:app.Id, 'MDViewerNative')
+    Wait-Until { if ($script:app.HasExited) { throw 'Host exited during startup.' }; [HostNative]::Window([uint32]$script:app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$script:app.Id, 'MorningDesk')
     # A test process started hidden has its first ShowWindow replaced by SW_HIDE (STARTUPINFO); retry until visible.
     Wait-Until { [void][HostNative]::ShowWindow($script:window, 4); [HostNative]::IsWindowVisible($script:window) }
     Wait-Until { (Text-Of $script:window).Contains('hit-alpha.md') }

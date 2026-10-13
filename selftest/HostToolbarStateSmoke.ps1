@@ -1,6 +1,6 @@
 ﻿param([Parameter(Mandatory=$true)][string]$ExePath, [Parameter(Mandatory=$true)][string]$OutputDirectory)
 $ErrorActionPreference='Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'An existing reader must be left untouched.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'An existing reader must be left untouched.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 Add-Type -AssemblyName System.Windows.Forms
 if ([Windows.Forms.SystemInformation]::HighContrast) { throw 'Normal-theme marker capture requires a separately coordinated non-HC session; do not change the system setting.' }
@@ -50,8 +50,8 @@ try {
     [IO.File]::WriteAllText($bravo,"# Bravo`n`nSecond source.`n")
     [IO.File]::WriteAllText((Join-Path $env:MDV_CONFIG_DIR 'config.txt'),"chrome=classic`ntheme=light`ntoc=0`nfont=16`nhints=0`nwin=120,120,1100,800,0`ntabs=$alpha|$bravo`n")
     $app=Start-Process -FilePath $ExePath -ArgumentList ('"'+$alpha+'"') -PassThru
-    Wait-Until { if ($app.HasExited) {throw 'Toolbar host exited.'}; [HostNative]::Window([uint32]$app.Id,'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window=[HostNative]::Window([uint32]$app.Id,'MDViewerNative')
+    Wait-Until { if ($app.HasExited) {throw 'Toolbar host exited.'}; [HostNative]::Window([uint32]$app.Id,'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window=[HostNative]::Window([uint32]$app.Id,'MorningDesk')
     Wait-Until { (Text-Of $script:window).Contains('alpha & literal.md') }
     # An explicit startup file overrides session restoration. Add the second fixture
     # through the actual owned single-instance handoff, not a presumed tabs config.

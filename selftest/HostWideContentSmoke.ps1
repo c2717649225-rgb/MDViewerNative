@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$ExePath, [string]$OutputDirectory, [string]$CaseName = '')
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before wide-content tests.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before wide-content tests.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 $root = Split-Path $PSScriptRoot -Parent
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $root 'artifacts\ui' }
@@ -45,8 +45,8 @@ try {
         [IO.File]::WriteAllText($path, $source)
         $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
         $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $path + '"') -PassThru -WindowStyle Hidden
-        Wait-Until { if ($app.HasExited) { throw 'Wide-content host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-        $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+        Wait-Until { if ($app.HasExited) { throw 'Wide-content host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+        $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
         Wait-Until { (Text-Of $script:window).Contains($name + '.md') }
         [void][HostNative]::ShowWindow($script:window, 4)
         $scale = [HostNative]::GetDpiForWindow($script:window) / 96.0

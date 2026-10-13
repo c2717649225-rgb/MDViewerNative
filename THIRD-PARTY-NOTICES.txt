@@ -1,4 +1,4 @@
-MDViewerNative 第三方声明 / Third-party notices
+MorningDesk 第三方声明 / Third-party notices
 
 本文件随发布包分发，列出发布包中包含的第三方内容及其许可证。
 This file ships with the release package and lists third-party material it contains.
@@ -6,7 +6,7 @@ This file ships with the release package and lists third-party material it conta
 ========================================================================
 1. gemoji（emoji 短码数据）
    来源 Source: https://github.com/github/gemoji  (db/emoji.json, 2026-09)
-   用途 Use: engine/EmojiMap.cs 中的短码到 Unicode 对照表，编译进 MDViewerNative.exe。
+   用途 Use: engine/EmojiMap.cs 中的短码到 Unicode 对照表，编译进 MorningDesk.exe。
    许可证 License: MIT
 ========================================================================
 
@@ -36,7 +36,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 ========================================================================
 2. .NET 运行时（.NET Runtime）
    来源 Source: https://github.com/dotnet/runtime
-   用途 Use: NativeAOT 发布时静态链接进 MDViewerNative.exe。
+   用途 Use: NativeAOT 发布时静态链接进 MorningDesk.exe。
    许可证 License: MIT
    .NET 运行时自身的第三方声明见 / The runtime's own third-party notices:
    https://github.com/dotnet/runtime/blob/main/THIRD-PARTY-NOTICES.TXT

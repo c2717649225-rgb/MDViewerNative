@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$ExePath, [Parameter(Mandatory=$true)][string]$OutputDirectory, [string]$FixturePath, [switch]$IncludeBottom)
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'Close MDViewerNative before this owned-window capture.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'Close MorningDesk before this owned-window capture.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 [void][IO.Directory]::CreateDirectory($OutputDirectory)
@@ -15,8 +15,8 @@ try {
     if (-not $FixturePath) { $FixturePath = Join-Path $PSScriptRoot '../docs/render-fixtures/containers.md' }
     Copy-Item $FixturePath $path
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"' + $path + '"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw 'Capture host exited.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Capture host exited.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     [void][HostNative]::ShowWindow($script:window, 5)
     Capture 'containers-wide'
     if ($IncludeBottom) {

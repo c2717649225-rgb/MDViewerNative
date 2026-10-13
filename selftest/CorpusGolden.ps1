@@ -13,13 +13,13 @@ $st = $root
 $files = [ordered]@{
   big     = (Resolve-Path "$root\..\engine\big.md").Path
   big20k  = (Resolve-Path "$root\..\engine\big20k.md").Path
-  torture = (Resolve-Path "$root\..\MDViewerNative\edge_torture.md").Path
-  qf      = (Resolve-Path "$root\..\MDViewerNative\全格式测试.md").Path
+  torture = (Resolve-Path "$root\..\samples\edge_torture.md").Path
+  qf      = (Resolve-Path "$root\..\samples\全格式测试.md").Path
   test2   = (Resolve-Path "$root\..\engine\test2.md").Path
-  full    = (Resolve-Path "$root\..\MDViewerNative\全格式测试.md").Path
+  full    = (Resolve-Path "$root\..\samples\全格式测试.md").Path
   # 宽内容回归网:宽表格 + 项内嵌代码块。原有六个语料都不含这两类结构,
   # 两次横向滚动改动的金标准都没能拦住,故单列此文件补网(30)。
-  wide    = (Resolve-Path "$root\..\MDViewerNative\wide_torture.md").Path
+  wide    = (Resolve-Path "$root\..\samples\wide_torture.md").Path
 }
 $manifest = Join-Path $root "corpus_golden.tsv"
 if (-not (Test-Path (Join-Path $st "bin\Release\net10.0-windows"))) { throw "build selftest first (dotnet build -c Release in selftest dir)" }
@@ -31,7 +31,7 @@ foreach ($k in $files.Keys) {
   $dump = $dumpLines -join "`n"
   $sha = [BitConverter]::ToString((New-Object System.Security.Cryptography.SHA256CryptoServiceProvider).ComputeHash((New-Object System.Text.UTF8Encoding).GetBytes($dump))).Replace("-","").Substring(0,16).ToLower()
   # qf covers missing relative images (base = selftest/, which holds none of test_*.bmp/jpg/png);
-  # full covers the same source with real image assets next to it in MDViewerNative/.
+  # full covers the same source with real image assets next to it in MorningDesk/.
   $kpArgs = @('run', '--project', $st, '-c', 'Release', '--no-build', '--', '--kp', $p)
   if ($k -eq 'qf') { $kpArgs += $root }
   $kpLines = & dotnet @kpArgs

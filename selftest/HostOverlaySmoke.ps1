@@ -1,6 +1,6 @@
 ﻿param([Parameter(Mandatory=$true)][string]$ExePath, [Parameter(Mandatory=$true)][string]$OutputDirectory)
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name MDViewerNative -ErrorAction SilentlyContinue) { throw 'A viewer is already running; test will not touch it.' }
+if (Get-Process -Name MorningDesk -ErrorAction SilentlyContinue) { throw 'A viewer is already running; test will not touch it.' }
 . (Join-Path $PSScriptRoot 'HostTestSupport.ps1')
 Add-Type -TypeDefinition @'
 using System;
@@ -64,8 +64,8 @@ try {
     $source = "# Start`n`n" + ("Reading text with enough words to wrap consistently across multiple lines. 正文位置应当保持稳定。`n`n" * 35) + "# Destination`n`nEnd.`n"
     [IO.File]::WriteAllText($path, $source)
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"'+$path+'"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw 'Overlay host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Overlay host exited during startup.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     # A test process started hidden has its first ShowWindow replaced by SW_HIDE (STARTUPINFO); retry until visible.
     Wait-Until { [void][HostNative]::ShowWindow($script:window, 4); [HostNative]::IsWindowVisible($script:window) }
     $scale = [HostNative]::GetDpiForWindow($script:window)/96.0
@@ -87,8 +87,8 @@ try {
     [void][HostNative]::PostMessage($script:window, 0x0010, [IntPtr]::Zero, [IntPtr]::Zero)
     if (-not $app.WaitForExit(5000)) { throw 'Overlay host did not exit before restart.' }
     $app = Start-Process -FilePath $ExePath -ArgumentList ('"'+$path+'"') -PassThru -WindowStyle Hidden
-    Wait-Until { if ($app.HasExited) { throw 'Overlay host exited during restart.' }; [HostNative]::Window([uint32]$app.Id, 'MDViewerNative') -ne [IntPtr]::Zero }
-    $script:window = [HostNative]::Window([uint32]$app.Id, 'MDViewerNative')
+    Wait-Until { if ($app.HasExited) { throw 'Overlay host exited during restart.' }; [HostNative]::Window([uint32]$app.Id, 'MorningDesk') -ne [IntPtr]::Zero }
+    $script:window = [HostNative]::Window([uint32]$app.Id, 'MorningDesk')
     Wait-Until { [void][HostNative]::ShowWindow($script:window, 4); [HostNative]::IsWindowVisible($script:window) }
     Assert-Host 'startup restores the pinned directory' ((Body-Hash 'pin-restart' 0) -eq $pinned)
     foreach ($width in @(820, 540)) {

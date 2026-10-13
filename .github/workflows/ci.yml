@@ -18,7 +18,9 @@ jobs:
         run: |
           # No --root: the snapshot history's initial commit contains the CommonMark
           # spec corpus, whose trailing whitespace is semantic hard breaks.
-          git diff-tree --check -m --first-parent -r HEAD
+          # -M: renamed fixture files (samples corpus) keep their semantic whitespace
+          # without being re-checked line by line as additions.
+          git diff-tree --check -M -m --first-parent -r HEAD
           if ($LASTEXITCODE -ne 0) { throw 'Changed-line whitespace check failed.' }
       - name: Verify (formatting, self-tests, specification baseline, corpus)
         shell: pwsh

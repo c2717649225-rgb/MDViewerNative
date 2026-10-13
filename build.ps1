@@ -85,7 +85,13 @@ try {
         # Start clean so a leftover MDNative.dll from an older layout can never ship.
         if (Test-Path -LiteralPath $publish) { Remove-Item -LiteralPath $publish -Recurse -Force }
         # Single-file: the shim is linked statically (see engine/MDViewerNative.csproj ShimStatic).
-        Invoke-Dotnet publish engine/MDViewerNative.csproj -c Release -r win-x64 '-p:PublishAot=true' '-p:IlcUseEnvironmentalTools=true' "-p:NativeShimPath=$shim" "-p:NativeShimLib=$shimLib" -o $publish
+        # IlcUseEnvironmentalTools is only for -SdkDirectory: there ILC must use the vcvars
+        # toolchain imported above (without the flag the platform linker is not found). With
+        # the normal SDK (CI) the same flag silently skips native compilation and the publish
+        # emits a JIT build instead of the native exe.
+        $ilcArgs = @()
+        if ($SdkDirectory) { $ilcArgs += '-p:IlcUseEnvironmentalTools=true' }
+        Invoke-Dotnet publish engine/MDViewerNative.csproj -c Release -r win-x64 '-p:PublishAot=true' @ilcArgs "-p:NativeShimPath=$shim" "-p:NativeShimLib=$shimLib" -o $publish
         if (Test-Path -LiteralPath (Join-Path $publish 'MDNative.dll')) { throw 'Publish must not ship MDNative.dll; the shim is linked into the exe.' }
         $exe = Join-Path $publish 'MDViewerNative.exe'
     }

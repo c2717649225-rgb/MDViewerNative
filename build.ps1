@@ -23,6 +23,10 @@ if ($Task -eq 'Publish') {
     }
 }
 $savedEnvironment = @{}
+# PowerShell 7 drops a hashtable key when $null is assigned to it, so the names
+# to restore are tracked separately: variables that were unset before the run
+# must still be unset afterwards.
+$savedNames = New-Object System.Collections.Generic.List[string]
 $locationPushed = $false
 try {
     if ($SdkDirectory) {
@@ -43,6 +47,7 @@ try {
             DOTNET_NOLOGO = 'true'
         }
         foreach ($name in $environment.Keys) {
+            [void]$savedNames.Add($name)
             $savedEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
             [Environment]::SetEnvironmentVariable($name, $environment[$name], 'Process')
         }
@@ -133,7 +138,8 @@ try {
     Write-Host "$Task completed."
 } finally {
     if ($locationPushed) { Pop-Location }
-    foreach ($name in $savedEnvironment.Keys) {
+    # $savedNames, not $savedEnvironment.Keys: a saved $null may have dropped its key.
+    foreach ($name in $savedNames) {
         [Environment]::SetEnvironmentVariable($name, $savedEnvironment[$name], 'Process')
     }
 }

@@ -16,7 +16,9 @@ jobs:
       - name: Check changed-line whitespace
         shell: pwsh
         run: |
-          git diff-tree --check --root -m --first-parent -r HEAD
+          # No --root: the snapshot history's initial commit contains the CommonMark
+          # spec corpus, whose trailing whitespace is semantic hard breaks.
+          git diff-tree --check -m --first-parent -r HEAD
           if ($LASTEXITCODE -ne 0) { throw 'Changed-line whitespace check failed.' }
       - name: Verify and publish NativeAOT
         shell: pwsh

@@ -20,6 +20,12 @@ jobs:
           # spec corpus, whose trailing whitespace is semantic hard breaks.
           git diff-tree --check -m --first-parent -r HEAD
           if ($LASTEXITCODE -ne 0) { throw 'Changed-line whitespace check failed.' }
+      - name: NativeAOT property probe
+        shell: pwsh
+        run: |
+          dotnet --version
+          dotnet msbuild engine/MDViewerNative.csproj -p:PublishAot=true -p:RuntimeIdentifier=win-x64 -getProperty:PublishAot,SelfContained,UseAppHost,IlcCompilerPath,IlcToolsPath,IlcHostPackagePath,IlcUseEnvironmentalTools,ShimStatic
+          Get-ChildItem "$env:USERPROFILE\.nuget\packages\microsoft.dotnet.ilcompiler" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
       - name: Exclude the workspace from Windows Defender
         shell: pwsh
         run: |

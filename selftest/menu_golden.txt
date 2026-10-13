@@ -1,0 +1,87 @@
+# menu_golden v3 — retained shortcuts plus explicitly approved Alt+Left/Right history navigation.
+# v2(B1/backlog#2):[ContextView]/[ContextEdit]/[More] 三段升级为全文案+分隔线契约
+#   ("---"=分隔线,位置=ShowContextMenu/ShowMoreMenu builder 规则);文案含 "\t加速键显示文本"
+#   (2000 段显示文本非注册加速键,故不入 [ACCEL] 子集检查)。1004 行用合并占位
+#   "切换到深色/浅色主题",运行时按当前主题渲染二者之一(selftest 归一对拍)。
+
+[ACCEL]  # fVirt: 0x01=VIRTUALKEY 0x08=CTRL 0x10=ALT 0x04=SHIFT
+  0x08 | 0x01 key='S' cmd= 1001
+  0x08 | 0x01 key='E' cmd= 1002
+  0x08 | 0x01 key='O' cmd= 1003
+  0x08 | 0x01 key='D' cmd= 1004
+  0x08 | 0x01 key='F' cmd= 1005
+  0x08 | 0x01 key='T' cmd= 1006
+  0x08 | 0x01 key='H' cmd= 1013
+  0x08 | 0x01 key='W' cmd= 1008
+  0x08 | 0x01 key=0x09 cmd= 1009
+  0x08 | 0x04 | 0x01 key=0x09 cmd= 1010
+  0x08 | 0x04 | 0x01 key='S' cmd= 1011
+  0x10 | 0x08 | 0x01 key='S' cmd= 1012
+  0x08 | 0x01 key=0xBB cmd= 1014
+  0x08 | 0x01 key=0x6B cmd= 1014
+  0x08 | 0x01 key=0xBD cmd= 1015
+  0x08 | 0x01 key=0x6D cmd= 1015
+  0x08 | 0x01 key='0' cmd= 1016
+  0x10 | 0x01 key=0x25 cmd= 2098
+  0x10 | 0x01 key=0x27 cmd= 2099
+  0x08 | 0x01 key='N' cmd= 2200
+  0x08 | 0x04 | 0x01 key='T' cmd= 2205
+  0x08 | 0x01 key='G' cmd= 2220
+  0x08 | 0x01 key='Z' cmd= 2003
+  0x08 | 0x01 key='Y' cmd= 2270
+  0x08 | 0x04 | 0x01 key='Z' cmd= 2270
+
+[MENU]   # 右键/更多由 Commands 表驱动;顺序即契约,分隔线位置=builder 规则
+
+  [ContextView]
+    1003|打开	Ctrl+O
+    1005|查找	Ctrl+F
+    ---
+    2001|复制	Ctrl+C
+    2081|复制为 HTML
+    2094|用当前选区查找…
+    2002|全选	Ctrl+A
+    ---
+    1011|导出 HTML…	Ctrl+Shift+S
+    1012|另存为…	Ctrl+Alt+S
+    1008|关闭标签	Ctrl+W
+    2097|从磁盘刷新…
+    2080|复制代码块
+    2098|后退	Alt+Left
+    2099|前进	Alt+Right
+    # 2095 查看图片…:builder 条件项(右键命中图片时置顶,不在命令表,不进契约正文)
+
+  [ContextEdit]
+    2003|撤销	Ctrl+Z
+    2270|重做	Ctrl+Y
+    ---
+    2004|剪切	Ctrl+X
+    2005|复制	Ctrl+C
+    2006|粘贴	Ctrl+V
+    2007|删除
+    ---
+    2008|全选	Ctrl+A
+    2097|从磁盘刷新…
+    2098|后退	Alt+Left
+    2099|前进	Alt+Right
+    ---
+    1005|查找	Ctrl+F
+    1013|替换…	Ctrl+H
+    # B1 修复后本段在文本区(编辑态右键/Shift+F10)可达:EditMainProc 拦 0x007B 转投父窗
+
+  [More]
+    1005|查找	Ctrl+F
+    1013|替换…	Ctrl+H
+    ---
+    1014|放大	Ctrl+=
+    1015|缩小	Ctrl+-
+    1016|恢复默认字号	Ctrl+0
+    ---
+    1004|切换到深色/浅色主题	Ctrl+D
+    2096|衬线正文
+    ---
+    1011|导出 HTML…	Ctrl+Shift+S
+    1012|另存为…	Ctrl+Alt+S
+    ---
+    2093|键盘快捷键…
+    # 尾部"最近打开"子菜单(MF_POPUP 2100+i,运行时按 _recent 动态生成,不进静态契约)

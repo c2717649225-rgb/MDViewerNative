@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <NativeShimPath Condition="'$(NativeShimPath)' == ''">$(MSBuildThisFileDirectory)..\engine\MDNative.dll</NativeShimPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\engine\MDViewerNative.csproj" />
+    <None Include="$(NativeShimPath)" Link="MDNative.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

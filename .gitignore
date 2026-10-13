@@ -1,0 +1,26 @@
+bin/
+artifacts/
+obj/
+*.user
+*.suo
+.vs/
+*.bak-*
+D:/
+.nuget/
+decomp/
+*.log
+work/*
+!work/fail_baseline.txt
+!work/ui_ref/
+MDViewerNative.old*.exe
+selftest/spec_fail.txt
+selftest/tests.json
+# cl.exe leftovers: BuildNative.ps1 compiles shim\mdnative.cpp into artifacts\native and
+# refreshes engine\MDNative.dll itself, so none of these belong in the repository.
+shim/MDNative.dll
+shim/*.obj
+shim/*.lib
+shim/*.exp
+!work/cap_ui.ps1
+!work/cap_diff.ps1
+!work/promote.ps1

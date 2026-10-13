@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <AssemblyName>MDViewerNative</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <NativeShimPath Condition="'$(NativeShimPath)' == ''">$(MSBuildThisFileDirectory)MDNative.dll</NativeShimPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SelfTest" />
+    <None Include="$(NativeShimPath)" Link="MDNative.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="'$(ShimStatic)' != 'true'" />
+    <None Include="$(NativeShimPath)" Link="MDNative.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Never" Condition="'$(ShimStatic)' == 'true'" />
+  </ItemGroup>
+  <!-- NativeAOT 发布且给了 NativeShimLib（MD_STATIC 编的静态库）时，shim 直接链接进 exe，发布目录只剩一个 exe。
+       开发构建、自测、JIT 版照旧用 MDNative.dll。 -->
+  <PropertyGroup>
+    <ShimStatic Condition="'$(PublishAot)' == 'true' and '$(NativeShimLib)' != ''">true</ShimStatic>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(ShimStatic)' == 'true'">
+    <DirectPInvoke Include="MDNative" />
+    <NativeLibrary Include="$(NativeShimLib)" />
+  </ItemGroup>
+</Project>

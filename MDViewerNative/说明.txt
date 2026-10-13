@@ -1,0 +1,22 @@
+﻿MD 查看器(原生版 MDViewerNative)
+================================
+
+纯 Win32 + DirectWrite 原生实现,无运行时依赖,双击即用。
+
+使用
+----
+- 打开:双击 exe(Ctrl+O)、拖入 .md 文件、或双击 .md 文件(已注册关联)
+- 查看:滚轮 / 滚动条 / PgUp PgDn Home End;链接点击打开;拖拽选择文字后 Ctrl+C 复制;双击选词;右键菜单
+- 编辑:Ctrl+E 或工具栏"编辑"进入;Ctrl+S 保存(保留 BOM 与换行风格);关闭时未保存会询问
+
+文件
+----
+- MDViewerNative.exe  主程序(约 1.6MB,NativeAOT)
+- MDNative.dll        D2D 资源创建辅助(约 104KB)
+- 注册文件关联.reg    将 .md / .markdown 关联到本程序(双击导入)
+- 卸载文件关联.reg    恢复为 WebView2 版关联
+
+说明
+----
+- 文件关联写入 HKCU(仅当前用户),不需要管理员权限
+- WebView2 版(MDViewer\)保留未动,可随时切回

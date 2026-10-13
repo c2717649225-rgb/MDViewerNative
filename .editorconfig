@@ -1,0 +1,32 @@
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+
+# Keep related entries together in data-only lookup tables.
+[engine/{EmojiMap,HtmlEntity,MathUnicode}.cs]
+csharp_new_line_before_members_in_object_initializers = false
+
+[*.{json,yml,yaml,props,csproj}]
+indent_style = space
+indent_size = 2
+
+# Markdown fixtures may intentionally contain hard-break spaces.
+[*.md]
+trim_trailing_whitespace = false
+
+# Project prose follows the changed-line CI check; use explicit <br> for hard breaks.
+[{README,ARCHITECTURE,CHANGELOG,PARSER-EVALUATION}.md]
+trim_trailing_whitespace = true
+
+[docs/mcp-*.md]
+trim_trailing_whitespace = true
+
+[*.ps1]
+charset = utf-8-bom

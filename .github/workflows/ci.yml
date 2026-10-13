@@ -1,0 +1,32 @@
+name: Windows build and regression checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Check changed-line whitespace
+        shell: pwsh
+        run: |
+          git diff-tree --check --root -m --first-parent -r HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Changed-line whitespace check failed.' }
+      - name: Verify and publish NativeAOT
+        shell: pwsh
+        run: ./build.ps1 -Task Publish
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-build-results
+          path: |
+            artifacts/MDViewerNative-win-x64.zip
+            artifacts/MDViewerNative-win-x64.zip.sha256
+            artifacts/MDViewerNative-win-x64.zip.manifest.json
+            selftest/spec_fail.txt

@@ -18,9 +18,13 @@ function Check-Sdk([string]$Name, [bool]$Condition, [string]$Detail = '') {
     Write-Output "PASS sdk/$Name"
 }
 function Find-EnvironmentDrift {
-    # Name only, never values: this suite runs in public CI logs.
     foreach ($name in $names) {
-        if ([Environment]::GetEnvironmentVariable($name, 'Process') -cne $before[$name]) { return $name }
+        $now = [Environment]::GetEnvironmentVariable($name, 'Process')
+        if ($now -cne $before[$name]) {
+            $b = $before[$name]; if ($null -eq $b) { $b = '<null>' }
+            $a = $now; if ($null -eq $a) { $a = '<null>' }
+            return "$name before=$b after=$a"
+        }
     }
     return $null
 }

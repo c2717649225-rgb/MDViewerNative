@@ -140,6 +140,14 @@ try {
     if ($locationPushed) { Pop-Location }
     # $savedNames, not $savedEnvironment.Keys: a saved $null may have dropped its key.
     foreach ($name in $savedNames) {
-        [Environment]::SetEnvironmentVariable($name, $savedEnvironment[$name], 'Process')
+        $saved = $savedEnvironment[$name]
+        if ([string]::IsNullOrEmpty($saved)) {
+            # Was unset before this run. On PowerShell 7's .NET, SetEnvironmentVariable
+            # with a null value leaves an empty variable instead of deleting it, which
+            # still leaks a setting; the provider delete is reliable on both.
+            Remove-Item "env:$name" -ErrorAction SilentlyContinue
+        } else {
+            [Environment]::SetEnvironmentVariable($name, $saved, 'Process')
+        }
     }
 }

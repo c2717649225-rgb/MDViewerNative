@@ -7,7 +7,7 @@ using MDViewerNative;
 internal sealed class RenderStateScope : IDisposable
 {
     private readonly float _size = RenderResources.BodySize, _scale = RenderResources.Scale, _serifBase = RenderResources.SerifBase;
-    private readonly bool _serif = RenderResources.SerifMode, _dark = RenderResources.DarkMode;
+    private readonly bool _serif = RenderResources.SerifMode, _dark = RenderResources.DarkMode, _grain = RenderResources.PaperGrain;
     private readonly string _family = RenderResources.SerifFamily;
 
     public void Dispose()
@@ -16,14 +16,15 @@ internal sealed class RenderStateScope : IDisposable
         RenderResources.SetSerif(_serif, _family);
         RenderResources.SerifBase = _serifBase;
         RenderResources.Scale = _scale;
+        RenderResources.SetPaperGrain(_grain);
         RenderResources.ApplyTheme(_dark);
     }
 
-    // 自检：六项状态全部改掉，离开作用域后逐项还原。
+    // 自检：七项状态全部改掉，离开作用域后逐项还原。
     internal static void Run(Action<string, bool, string> check)
     {
         float size = RenderResources.BodySize, scale = RenderResources.Scale, serifBase = RenderResources.SerifBase;
-        bool serif = RenderResources.SerifMode, dark = RenderResources.DarkMode;
+        bool serif = RenderResources.SerifMode, dark = RenderResources.DarkMode, grain = RenderResources.PaperGrain;
         string family = RenderResources.SerifFamily;
         using (new RenderStateScope())
         {
@@ -31,11 +32,13 @@ internal sealed class RenderStateScope : IDisposable
             RenderResources.SetSerif(!serif, family ?? "Times New Roman");
             RenderResources.SerifBase = serifBase + 0.1f;
             RenderResources.Scale = scale + 1f;
+            RenderResources.SetPaperGrain(!grain);
             RenderResources.ApplyTheme(!dark);
         }
         bool ok = RenderResources.BodySize == size && RenderResources.Scale == scale && RenderResources.SerifBase == serifBase
-            && RenderResources.SerifMode == serif && RenderResources.SerifFamily == family && RenderResources.DarkMode == dark;
-        check("RenderState/scope restores size, serif, baseline, scale and theme", ok,
-            $"size={RenderResources.BodySize} scale={RenderResources.Scale} base={RenderResources.SerifBase} serif={RenderResources.SerifMode} family={RenderResources.SerifFamily ?? "(null)"} dark={RenderResources.DarkMode}");
+            && RenderResources.SerifMode == serif && RenderResources.SerifFamily == family && RenderResources.DarkMode == dark
+            && RenderResources.PaperGrain == grain;
+        check("RenderState/scope restores size, serif, baseline, scale, grain and theme", ok,
+            $"size={RenderResources.BodySize} scale={RenderResources.Scale} base={RenderResources.SerifBase} serif={RenderResources.SerifMode} family={RenderResources.SerifFamily ?? "(null)"} dark={RenderResources.DarkMode} grain={RenderResources.PaperGrain}");
     }
 }

@@ -30,19 +30,31 @@ internal static unsafe partial class Program
         var shown = fresh ? new RECT { L = 0, T = 0, R = cr.R - cr.L, B = cr.B - cr.T } : ps.rcPaint;
         if (hdc == IntPtr.Zero) hdc = win;
         else if (fresh) { toolHit = true; contentHit = true; }   // 缓冲刚重建：整幅重画
+        // 方案 b:滚动帧内给各绘制层分别计时(局部函数捕获不产生堆分配,常态 probe=false 直接返回)。
+        bool probe = FrameProbeOn && _frameInTick;
+        System.Diagnostics.Stopwatch lp = probe ? _layerProbe : null;
+        void LayerBegin() { lp?.Restart(); }
+        void LayerEnd(System.Collections.Generic.List<double> sink) { if (lp != null) { lp.Stop(); sink.Add(lp.Elapsed.TotalMilliseconds); } }
         try
         {
             if (contentHit && HomeShown && RenderResources.Rt != IntPtr.Zero)
             {
+                LayerBegin();
                 PaintHome(hdc, cr);   // U10：起始页代替正文
                 if (FooterShown) FooterView.Paint(hdc, cr, _scale, HomeFooterNow());
+                LayerEnd(_lpDoc);
             }
             else if (contentHit && !_editing && RenderResources.Rt != IntPtr.Zero)
             {
-                Doc.Paint(cr, hdc, _offY, ContentHeight, ContentTop, _recent, TocTop - ContentTop, _editing || State.Appearance.Desk ? null : ReturnPrompt, ZenHidden);
-                PaintCord(hdc, cr);   // U5a：书签绳
-                if (FooterShown) FooterView.Paint(hdc, cr, _scale, FooterNow());   // U4：页脚浮在正文上
+                LayerBegin();
+                // 滚动优化：正文/书签绳/页脚共享同一次 BeginDraw/EndDraw——分层探针实测逐层冲刷各 ~4ms，是大头。
+                RenderResources.BeginBatch(hdc, cr, _scale);
+                Doc.Paint(cr, hdc, _offY, ContentHeight, ContentTop, _recent, TocTop - ContentTop, _editing || State.Appearance.Desk ? null : ReturnPrompt, ZenHidden, batch: true);
+                PaintCord(hdc, cr, batch: true);
+                if (FooterShown) FooterView.Paint(hdc, cr, _scale, FooterNow(), batch: true);
+                RenderResources.EndBatch();
                 ScheduleAnimation();   // 绘制后按最近到期帧安排下一次推进(无动画则清计时器)
+                LayerEnd(_lpDoc);
             }
             if (contentHit && _editing && RenderResources.Rt != IntPtr.Zero && _hEdit != IntPtr.Zero)
             {
@@ -50,9 +62,11 @@ internal static unsafe partial class Program
                 PaintEditBar(hdc, cr);   // U9a：编辑条
                 if (FooterShown) FooterView.Paint(hdc, cr, _scale, EditFooterNow());   // U9a：编辑模式页脚
             }
+            LayerBegin();
             if (contentHit && Find.Visible) Find.Paint(hdc, cr);
             if (contentHit && !_editing && RenderResources.Rt != IntPtr.Zero) PaintJuan(hdc, cr);   // U8：目录卷目盖住正文与页脚
             if (contentHit && !_editing && RenderResources.Rt != IntPtr.Zero) PaintSelectionBubble(hdc, cr);   // U7：选区气泡在最上层
+            LayerEnd(_lpOver);
             if (toolHit)
             {
                 var tabInfo = ToolbarTabInfo();
@@ -65,10 +79,13 @@ internal static unsafe partial class Program
         {
             Log("PAINT " + ex + Environment.NewLine + (ex.StackTrace ?? ""));
         }
+        RenderResources.EndBatch();   // 批内异常时收掉 D2D 批次（幂等；正常路径已在上面的 EndBatch 关闭）
         // 查找开关、编辑切换、焦点变化会改变沉浸隐藏条件:内容帧检查一次,需要时补刷工具栏带。
         if (ZenHidden != _zenPainted) InvalidateToolbar(h);
+        LayerBegin();
         PaintSpread(hdc);   // U11b：换纸晕开盖在最上层
         if (hdc != win) _paintBuffer.Present(win, shown);
+        LayerEnd(_lpPresent);
         _ = Externs.EndPaint(h, in ps);
         return default;
     }

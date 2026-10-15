@@ -136,6 +136,7 @@ internal static unsafe partial class Program
         if ((code == 0 || code == 1) && cmd == 2291) { TogglePalette(); return default; }   // U11：命令面板（Ctrl+K / Ctrl+Shift+P）
         if ((code == 0 || code == 1) && cmd == 2290) { ShowHome(); return default; }        // U11：起始页（命令面板）
         if ((code == 0 || code == 1) && cmd == 2251) { ToggleZen(); return default; }   // 阶段 B:沉浸模式(F11)
+        if ((code == 0 || code == 1) && cmd == 2252) { ToggleGrain(); return default; }   // U2b:纸纹开关(命令面板)
         if (code == 0 && cmd >= 2100 && cmd <= 2104)                               // 最近打开
         {
             int ri = cmd - 2100;

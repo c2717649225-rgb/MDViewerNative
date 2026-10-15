@@ -10,15 +10,18 @@ internal static unsafe class FooterView
     public const float Height = DeskMetrics.FooterHeight, FadeAbove = DeskMetrics.FooterFade, PadLeft = 20f, PadRight = 30f, Gap = 16f, TextSize = DeskMetrics.FooterTextSize;
     const float SolidFrom = 0.55f;   // 渐变在 55% 处到达纸色（演示 linear-gradient(… , paper 55%)）
 
-    public static void Paint(nint dc, RECT client, float scale, FooterContent content)
+    public static void Paint(nint dc, RECT client, float scale, FooterContent content, bool batch = false)
     {
         if (content == null || Rt == IntPtr.Zero || FmtFooter == IntPtr.Zero) return;
-        PBind(Rt, dc, &client);
-        ((delegate* unmanaged[Stdcall]<nint, float, float, void>)(*(nint**)Rt)[51])(Rt, 96f * scale, 96f * scale);
-        PBegin(Rt);
         ulong a = 0, b = 0;
+        if (!batch)
+        {
+            PBind(Rt, dc, &client);
+            ((delegate* unmanaged[Stdcall]<nint, float, float, void>)(*(nint**)Rt)[51])(Rt, 96f * scale, 96f * scale);
+            PBegin(Rt);
+        }
         try { Draw(client.R / scale, client.B / scale, content); }
-        finally { PEnd(Rt, &a, &b); }
+        finally { if (!batch) PEnd(Rt, &a, &b); }
     }
 
     static void Draw(float width, float bottom, FooterContent content)

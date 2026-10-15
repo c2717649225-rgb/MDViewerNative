@@ -26,6 +26,7 @@ internal sealed class AppState
     public bool ConfigThemeDark { get; set; }
     public bool ConfigToc { get; set; }
     public bool ConfigSerif { get; set; }
+    public bool ConfigGrain { get; set; } = true;   // 纸纹开关(grain=0 关)，缺省开=U2b 原设计
     public bool HasBounds { get; set; }
     public bool WindowMaximized { get; set; }
     public RECT WindowBounds { get; set; }

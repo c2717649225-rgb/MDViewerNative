@@ -31,13 +31,13 @@ internal static unsafe partial class Program
         return _ticks;
     }
 
-    static void PaintCord(IntPtr hdc, RECT client)
+    static void PaintCord(IntPtr hdc, RECT client, bool batch = false)
     {
         if (!CordShown) return;
         var ticks = TicksNow();
         CordRect? flag = BackFlagShown ? CordGeometry.BackFlag(CordFrameNow(), BackFlagProgress()) : null;
         CordView.Paint(hdc, client, _scale, CordFrameNow(), CordRectNow(), _cordHot || _cord.Dragging, ticks, _nearTick < ticks.Count ? _nearTick : -1,
-            flag, DeskAnimations.BackFlagPose(Anim.Progress(DeskAnim.BackFlag, Environment.TickCount64)));
+            flag, DeskAnimations.BackFlagPose(Anim.Progress(DeskAnim.BackFlag, Environment.TickCount64)), batch);
     }
 
     // 悬停：靠近刻度（±7）时刻度放大并提示章节名；否则悬停绳子（列内、绳长范围内）提亮并提示「已读 n%」。只重画这一列。

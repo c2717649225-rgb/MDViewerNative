@@ -34,7 +34,7 @@ public enum CmdGate
 }
 
 // 谓词输入:五维状态快照(纯值,可枚举做真值表断言)
-public sealed record CmdState(bool Editing, bool Dirty, bool TocOpen, bool FindOpen, bool HasSel, float BodyFont, bool Serif = false, bool TocAvailable = true, bool HasFile = true, bool Back = false, bool Forward = false, bool CodeBlock = false, bool Composing = false, bool ReadOnly = false, bool Pinned = false, int TabCount = 1, bool CanReopen = false, bool UndoAvailable = false, bool RedoAvailable = false, bool Zen = false, float DefaultFont = 16f, bool Home = false)
+public sealed record CmdState(bool Editing, bool Dirty, bool TocOpen, bool FindOpen, bool HasSel, float BodyFont, bool Serif = false, bool TocAvailable = true, bool HasFile = true, bool Back = false, bool Forward = false, bool CodeBlock = false, bool Composing = false, bool ReadOnly = false, bool Pinned = false, int TabCount = 1, bool CanReopen = false, bool UndoAvailable = false, bool RedoAvailable = false, bool Zen = false, float DefaultFont = 16f, bool Home = false, bool Grain = true)
 {
     public bool ZoomMax => BodyFont >= 28f;    // 12–28 钳制(Program.ZoomFont)
     public bool ZoomMin => BodyFont <= 12f;
@@ -180,6 +180,7 @@ public static class Commands
         new(2243, "图片缓存…", "", CmdFace.Maintenance, Gate: CmdGate.StableText),
         new(2250, "行为设置…", "", CmdFace.Preferences, Gate: CmdGate.StableText),
         new(2251, "沉浸模式", "F11", CmdFace.Preferences, Checked: s => s.Zen),   // 阶段 B:隐藏工具栏绘制,几何不变;更多已满 10 项
+        new(2252, "纸纹", "", CmdFace.Preferences, Checked: s => s.Grain),   // U2b 纸纹开关：仅命令面板可见(desk 阅读才画；classic/高对比度本就不画)
         new(2280, "添加书签…", "", CmdFace.ReadingTools, s => s.HasFile, Gate: CmdGate.StableText | CmdGate.Document),
         new(2281, "书签管理…", "", CmdFace.ReadingTools, Gate: CmdGate.StableText),
         new(2282, "跳转历史管理…", "", CmdFace.Maintenance, Gate: CmdGate.StableText),

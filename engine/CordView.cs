@@ -11,20 +11,23 @@ internal static unsafe class CordView
     const int Slices = 33;   // 横向切成 1/3 DIP 的细条：每条自带明暗，也顺带画出燕尾斜边
 
     public static void Paint(nint dc, RECT client, float scale, CordFrame frame, CordRect cord, bool hot, IReadOnlyList<CordTick> ticks, int near,
-        CordRect? backFlag = null, (float Dx, float Scale, float Opacity) pose = default)
+        CordRect? backFlag = null, (float Dx, float Scale, float Opacity) pose = default, bool batch = false)
     {
         if (Rt == IntPtr.Zero || BAccent == IntPtr.Zero || cord.Height <= 0f) return;
-        PBind(Rt, dc, &client);
-        ((delegate* unmanaged[Stdcall]<nint, float, float, void>)(*(nint**)Rt)[51])(Rt, 96f * scale, 96f * scale);
-        PBegin(Rt);
         ulong a = 0, b = 0;
+        if (!batch)
+        {
+            PBind(Rt, dc, &client);
+            ((delegate* unmanaged[Stdcall]<nint, float, float, void>)(*(nint**)Rt)[51])(Rt, 96f * scale, 96f * scale);
+            PBegin(Rt);
+        }
         try
         {
             if (backFlag is CordRect flag) BackFlag(flag, pose);   // 书签在绳子后面
             Draw(cord, hot);
             Ticks(frame, ticks, near);
         }
-        finally { PEnd(Rt, &a, &b); }
+        finally { if (!batch) PEnd(Rt, &a, &b); }
     }
 
     static void Draw(CordRect c, bool hot)

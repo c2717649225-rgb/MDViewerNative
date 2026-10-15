@@ -1735,7 +1735,7 @@ unsafe partial class DocView : IDisposable, LayoutCacheBudget.IView
     internal static bool QuoteRailJoins(Block current, Block next, int level)
         => next != null && current.QuoteDepth >= level && next.QuoteDepth >= level && next.QSeq == current.QSeq;
 
-    public unsafe void Paint(RECT cr, nint hdc, float offsetDip, float viewHDip, float contentTopDip, IReadOnlyList<string> recentFiles = null, float overlayHeight = 0f, ReturnHint returnHint = null, bool zenQuiet = false)
+    public unsafe void Paint(RECT cr, nint hdc, float offsetDip, float viewHDip, float contentTopDip, IReadOnlyList<string> recentFiles = null, float overlayHeight = 0f, ReturnHint returnHint = null, bool zenQuiet = false, bool batch = false)
     {
         if (_linkBrush != IntPtr.Zero && _linkBrush != BAccent) { ClearCache(); _linkBrush = IntPtr.Zero; }   // 图形资源换过:旧布局里的链接画刷已失效
         EnsureLayout();
@@ -1749,15 +1749,18 @@ unsafe partial class DocView : IDisposable, LayoutCacheBudget.IView
         rECT.R = cr.R - cr.L;
         rECT.B = cr.B - cr.T;
         RECT rECT2 = rECT;
-        PBind(Rt, hdc, &rECT2);
+        if (!batch)
+        {
+            PBind(Rt, hdc, &rECT2);
+            ((delegate* unmanaged[Stdcall]<nint, float, float, void>)(*(IntPtr*)((nint)(*(IntPtr*)Rt) + (nint)51 * (nint)sizeof(nint))))(Rt, 96f * Scale, 96f * Scale);
+            PBegin(Rt);
+        }
         D2D1_RECT_F d2D1_RECT_F = default(D2D1_RECT_F);
         d2D1_RECT_F.left = 0f;
         d2D1_RECT_F.top = contentTopDip;   // DIP:与 DrawToolbar 的 DIP 底边(22)衔接,避免中缝不清屏
         d2D1_RECT_F.right = cr.R - cr.L;
         d2D1_RECT_F.bottom = cr.B - cr.T;
         D2D1_RECT_F d2D1_RECT_F2 = d2D1_RECT_F;
-        ((delegate* unmanaged[Stdcall]<nint, float, float, void>)(*(IntPtr*)((nint)(*(IntPtr*)Rt) + (nint)51 * (nint)sizeof(nint))))(Rt, 96f * Scale, 96f * Scale);
-        PBegin(Rt);
         D2D1_COLOR_F d2D1_COLOR_F = CanvasColor;
         D2D1_COLOR_F canvasRef = d2D1_COLOR_F;
         PClear(Rt, &canvasRef);
@@ -2182,11 +2185,12 @@ unsafe partial class DocView : IDisposable, LayoutCacheBudget.IView
         finally
         {
             // Paint 中途抛异常(mermaid/公式/布局失败等)时裁剪栈与 EndDraw 也必须收尾,
-            // 否则残留裁剪区会污染后续所有帧直到重建渲染目标
+            // 否则残留裁剪区会污染后续所有帧直到重建渲染目标。
+            // batch 模式下 EndDraw 由宿主 OnPaint 的 EndBatch 统一收(裁剪栈仍要在这里配对弹出)。
             if (tocClip) PPopClip(Rt);
             PPopClip(Rt);
             RestoreInkedLinks();
-            PEnd(Rt, &num12, &num13);
+            if (!batch) PEnd(Rt, &num12, &num13);
         }
     }
 

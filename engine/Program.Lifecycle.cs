@@ -33,9 +33,13 @@ internal static unsafe partial class Program
         if ((int)w == TIMER_SMOOTH)
         {
             // 指数缓出:步进必须走 SetOffset——直接改 _offY 时滚动条不跟随,内容与滚动条脱节再跳齐,观感即"抖动"。
+            if (FrameProbeOn) _frameProbe.Restart();   // 方案 b:测的是 Step+同步上屏(UpdateWindow 内完成 WM_PAINT)的整帧耗时
+            _frameInTick = FrameProbeOn;
             float next = _smooth.Step(_offY, _scale, MaxOff(), out bool settled);
             SetOffset(next, stopAnim: false);
-            if (settled) _ = Externs.KillTimer(h, (IntPtr)TIMER_SMOOTH);
+            _frameInTick = false;
+            if (FrameProbeOn) { _frameProbe.Stop(); _frameProbeMs.Add(_frameProbe.Elapsed.TotalMilliseconds); }
+            if (settled) { _ = Externs.KillTimer(h, (IntPtr)TIMER_SMOOTH); FrameProbeReport(); }
             return Externs.DefWindowProcW(h, m, w, l);
         }
         if ((int)w == TIMER_AUTOSCROLL)

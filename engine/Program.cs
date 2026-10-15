@@ -276,6 +276,14 @@ internal static unsafe partial class Program
     const int TIMER_AUTOSCROLL = 1;
     const int TIMER_SMOOTH = 4;
     static readonly SmoothScroll _smooth = new();   // 滚轮缓出状态机:目标与步进在 SmoothScroll,定时器与重绘留在宿主
+    // 方案 b(量化)：MDV_FRAMEPROBE=1 时记录平滑滚动每帧耗时(Step+SetOffset 的同步上屏都在内)，
+    // 动画收敛后把分布写进 app.log，用于判断"滚轮卡"是否单帧超 16ms。常态零开销(只多一次环境变量读取)。
+    static readonly bool FrameProbeOn = Environment.GetEnvironmentVariable("MDV_FRAMEPROBE") == "1";
+    static readonly System.Diagnostics.Stopwatch _frameProbe = new();
+    static readonly List<double> _frameProbeMs = new();
+    static bool _frameInTick;   // 探针：当前在滚动帧内(OnPaint 由 UpdateWindow 同步执行，靠它区分滚动帧与普通重绘)
+    static readonly System.Diagnostics.Stopwatch _layerProbe = new();
+    static readonly List<double> _lpDoc = new(), _lpOver = new(), _lpPresent = new();
     static float ContentTop => ToolH + EditBarHeight + (_editing ? Find.Height : 0f);   // U9a：desk 编辑时顶栏下先是编辑条
     static float InteractionTop => ToolH + EditBarHeight + Find.Height;
     // D3:目录(与标尺)上沿;只有查找覆盖层与目录水平相交(窄窗全宽条)时才从其下缘开始。绘制、裁剪、命中共用
@@ -504,6 +512,7 @@ internal static unsafe partial class Program
     static bool _hasCfgTheme { get => State.HasConfigTheme; set => State.HasConfigTheme = value; }
     static bool _cfgToc { get => State.ConfigToc; set => State.ConfigToc = value; }
     static bool _cfgSerif { get => State.ConfigSerif; set => State.ConfigSerif = value; }
+    static bool _cfgGrain { get => State.ConfigGrain; set => State.ConfigGrain = value; }
     static RECT _winBounds { get => State.WindowBounds; set => State.WindowBounds = value; }
     static bool _hasBounds { get => State.HasBounds; set => State.HasBounds = value; }
     static bool _winMax { get => State.WindowMaximized; set => State.WindowMaximized = value; }
@@ -526,6 +535,7 @@ internal static unsafe partial class Program
             if (v.Toc is bool toc) _cfgToc = toc;
             if (v.Hints is int hints) _lbHintsLeft = hints;   // I10 提示计数(0-3)
             if (v.Serif is bool serif) _cfgSerif = serif;     // I11 衬线 opt-in(默认 0=零回归)
+            if (v.Grain is bool grain) _cfgGrain = grain;     // 纸纹开关(缺行=开)
             if (v.Zen is bool zen) Zen.Enabled = zen;         // 阶段 B 沉浸(默认 0)
             if (v.Font is float font) _bodyFont = font;
             _cfgPaper = v.Paper; _cfgChrome = v.ChromeDesk;   // U2：原样写回，classic 下也不丢
@@ -559,7 +569,8 @@ internal static unsafe partial class Program
             string text = AppConfig.Format(RenderResources.DarkMode, _cfgToc, _lbHintsLeft, RenderResources.SerifMode, Zen.Enabled, _bodyFont,
                 windowBounds, _recent, AppPreferences.Current.RecentFiles, AppConfig.MergeSessionTabs(openPaths, _offlineTabs), _cfgUnknownLines,
                 State.Appearance.Desk ? PaperPalette.Token(State.Appearance.Paper) : _cfgPaper is Paper keptPaper ? PaperPalette.Token(keptPaper) : null,
-                _cfgChrome is bool desk ? Appearance.ChromeToken(desk) : null);
+                _cfgChrome is bool desk ? Appearance.ChromeToken(desk) : null,
+                RenderResources.PaperGrain ? (bool?)null : false);
             AtomicFile.WriteState(p, Encoding.UTF8.GetBytes(text));
             Reading.Save(Path.Combine(Path.GetDirectoryName(p), "reading-state.tsv"), Tabs, Session.Path);
         }
@@ -738,6 +749,7 @@ internal static unsafe partial class Program
         }
 
         using var graphicsScope = graphics;
+        RenderResources.SetPaperGrain(_cfgGrain);   // 纸纹开关：配置缺行时 _cfgGrain 保持 true(U2b 原设计)
         Toolbar.AlwaysShowClose = (GetSystemMetrics(94 /*SM_DIGITIZER*/) & 0x0F) != 0;
         Toolbar.Desk = State.Appearance.Desk;   // U6a：desk 顶栏
 
@@ -1712,7 +1724,31 @@ internal static unsafe partial class Program
         RefreshLook();
     }
 
-    static CmdState CmdStateNow() => new(_editing, _dirty, State.Appearance.Desk ? JuanOpen : Doc.TocVisible, Find.Visible, Doc.HasSel, _bodyFont, RenderResources.SerifMode, State.Appearance.Desk || OverlayGeometry.TocWidth(_viewW / _scale) > 0f, _path.Length > 0, Navigation.CanBack, Navigation.CanForward, CodeForCopy() != null, HasComposition, Session.ReadOnly, Session.Pinned, Tabs.Count, Tabs.CanReopen, Session.EditHistory.CanUndo, Session.EditHistory.CanRedo, Zen.Enabled, RenderResources.Reading.DefaultBodySize, HomeShown);
+    static void ToggleGrain()
+    {
+        RenderResources.SetPaperGrain(!RenderResources.PaperGrain);
+        InvalidateContent(_hwnd);   // 纸纹只铺在正文条带(classic 不画)，无需整窗重画
+        SaveConfig();
+    }
+
+    // 方案 b(量化)：一次缓动结束后汇报每帧耗时分布。样本只进内存，报告走 app.log。
+    static double ProbeMedian(double[] sorted) => sorted.Length == 0 ? 0 : sorted.Length % 2 == 1 ? sorted[sorted.Length / 2] : (sorted[sorted.Length / 2 - 1] + sorted[sorted.Length / 2]) / 2;
+
+    static void FrameProbeReport()
+    {
+        if (!FrameProbeOn || _frameProbeMs.Count == 0) { _frameInTick = false; return; }
+        var sorted = _frameProbeMs.OrderBy(v => v).ToArray();
+        int p95 = Math.Max(0, (int)Math.Ceiling(sorted.Length * 0.95) - 1);
+        int over16 = sorted.Count(v => v > 16.0);
+        AppLog.Write($"frameprobe: n={sorted.Length} median={ProbeMedian(sorted):F2}ms p95={sorted[p95]:F2}ms max={sorted[^1]:F2}ms over16={over16}");
+        if (_lpDoc.Count > 0)
+            AppLog.Write($"frameprobe-layers: batch={ProbeMedian(_lpDoc.OrderBy(v => v).ToArray()):F2}ms over={ProbeMedian(_lpOver.OrderBy(v => v).ToArray()):F2}ms present={ProbeMedian(_lpPresent.OrderBy(v => v).ToArray()):F2}ms (n={_lpDoc.Count})");
+        _frameProbeMs.Clear();
+        _lpDoc.Clear(); _lpOver.Clear(); _lpPresent.Clear();
+        _frameInTick = false;
+    }
+
+    static CmdState CmdStateNow() => new(_editing, _dirty, State.Appearance.Desk ? JuanOpen : Doc.TocVisible, Find.Visible, Doc.HasSel, _bodyFont, RenderResources.SerifMode, State.Appearance.Desk || OverlayGeometry.TocWidth(_viewW / _scale) > 0f, _path.Length > 0, Navigation.CanBack, Navigation.CanForward, CodeForCopy() != null, HasComposition, Session.ReadOnly, Session.Pinned, Tabs.Count, Tabs.CanReopen, Session.EditHistory.CanUndo, Session.EditHistory.CanRedo, Zen.Enabled, RenderResources.Reading.DefaultBodySize, HomeShown, RenderResources.PaperGrain);
 
     // 审查修复:置脏统一入口——clean→dirty 翻转即刷工具栏(warn 点与标题 * 同帧;反向消脏由 SaveFile 全窗失效覆盖)
     static void MarkDirty()

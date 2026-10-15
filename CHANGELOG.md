@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Paper-grain toggle: "纸纹" in the command palette (Ctrl+K), persisted as `grain=0` in config.txt when turned off; the lamp glow and vignette are unaffected. High-contrast, print and classic layouts never drew the grain.
+- Scroll frame probe: set `MDV_FRAMEPROBE=1` to record per-frame smooth-scroll timings (step + synchronous present) in app.log after each easing settles.
+
+### Changed
+
+- Smoother wheel scrolling: the body, bookmark cord and footer now share a single BeginDraw/EndDraw flush per frame. Measured on a ~1538×930 client: median frame 17ms → 10ms; burst scrolling no longer exceeds the 16ms frame budget (0/60 frames). Visual output is unchanged; classic, high-contrast and print paths keep their own sessions.
+
 ## 1.0.0 (2026-10-13)
 
 First published release. Windows x64, NativeAOT single-file build, MIT licensed.

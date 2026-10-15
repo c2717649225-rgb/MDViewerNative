@@ -14,6 +14,7 @@ internal sealed class AppConfigValues
     public bool? Toc;
     public int? Hints;        // 只接受 0..3
     public bool? Serif;
+    public bool? Grain;       // grain=0 关纸纹；缺行视为开（U2b 纸纹的开关）
     public bool? Zen;
     public float? Font;       // 已钳制到 12..28；NaN、∞ 丢弃
     public Paper? Paper;      // paper=，v3 纸张（U2）；无效值为 null
@@ -58,6 +59,7 @@ internal static class AppConfig
             else if (k == "toc") values.Toc = v == "1";
             else if (k == "hints" && int.TryParse(v, NumberStyles.Integer, CultureInfo.InvariantCulture, out int hv) && hv >= 0 && hv <= 3) values.Hints = hv;
             else if (k == "serif") values.Serif = v == "1";
+            else if (k == "grain") values.Grain = v == "1";
             else if (k == "zen") values.Zen = v == "1";
             else if (k == "paper") { if (PaperPalette.Parse(v) is Paper paper) values.Paper = paper; }
             else if (k == "chrome") { if (Appearance.ParseChrome(v) is bool desk) values.ChromeDesk = desk; }
@@ -84,7 +86,7 @@ internal static class AppConfig
 
     // 键名区分大小写，与解析分支一致；recentN 归本版本管理（写回时重新编号）。
     static bool IsKnownKey(string k) =>
-        k is "theme" or "toc" or "hints" or "serif" or "zen" or "font" or "win" or "tabs" or "paper" or "chrome" || IsRecentKey(k);
+        k is "theme" or "toc" or "hints" or "serif" or "grain" or "zen" or "font" or "win" or "tabs" or "paper" or "chrome" || IsRecentKey(k);
 
     // 只认 recent 加数字：其他以 recent 开头的键（例如新版本的 recentFolder）按不认识的键原样保留（E24）。
     static bool IsRecentKey(string k) =>
@@ -106,7 +108,7 @@ internal static class AppConfig
     // windowBounds 为 null 时不写 win 行（窗口尚未创建或取不到矩形）。paper、chrome 为 null 时不写（U2）。
     internal static string Format(bool dark, bool toc, int hints, bool serif, bool zen, float font, string windowBounds,
         IReadOnlyList<string> recent, int recentLimit, IEnumerable<string> tabs, IReadOnlyList<string> unknownLines = null,
-        string paper = null, string chrome = null)
+        string paper = null, string chrome = null, bool? grain = null)
     {
         var sb = new StringBuilder();
         sb.Append("theme=").Append(dark ? "dark" : "light").Append('\n');
@@ -121,6 +123,7 @@ internal static class AppConfig
         sb.Append("tabs=").Append(string.Join("|", tabs)).Append('\n');
         if (paper != null) sb.Append("paper=").Append(paper).Append('\n');
         if (chrome != null) sb.Append("chrome=").Append(chrome).Append('\n');
+        if (grain is false) sb.Append("grain=0\n");   // 默认开，只在用户关掉后写行；旧版本按不认识的键原样保留(E9)
         if (unknownLines != null)
             foreach (string line in unknownLines) sb.Append(line).Append('\n');
         return sb.ToString();

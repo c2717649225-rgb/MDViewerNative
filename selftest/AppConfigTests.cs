@@ -16,13 +16,13 @@ internal static class AppConfigTests
 
         var empty = Parse("");
         C("empty file leaves every value unset", empty.ThemeDark == null && empty.Toc == null && empty.Hints == null && empty.Serif == null
-            && empty.Zen == null && empty.Font == null && empty.Bounds == null);
+            && empty.Grain == null && empty.Zen == null && empty.Font == null && empty.Bounds == null);
 
-        var basic = Parse("theme=dark\ntoc=1\nhints=2\nserif=1\nzen=1\nfont=18\nwin=140,90,766,900,1");
-        C("known keys are read", basic.ThemeDark == true && basic.Toc == true && basic.Hints == 2 && basic.Serif == true && basic.Zen == true
+        var basic = Parse("theme=dark\ntoc=1\nhints=2\nserif=1\ngrain=0\nzen=1\nfont=18\nwin=140,90,766,900,1");
+        C("known keys are read", basic.ThemeDark == true && basic.Toc == true && basic.Hints == 2 && basic.Serif == true && basic.Grain == false && basic.Zen == true
             && basic.Font == 18f && basic.Bounds is { L: 140, T: 90, R: 906, B: 990 } && basic.Maximized);
-        var off = Parse("theme=light\ntoc=0\nserif=0\nzen=0\ntheme=Dark");
-        C("non-matching values read as false", off.ThemeDark == false && off.Toc == false && off.Serif == false && off.Zen == false);
+        var off = Parse("theme=light\ntoc=0\nserif=0\ngrain=1\nzen=0\ntheme=Dark");
+        C("non-matching values read as false", off.ThemeDark == false && off.Toc == false && off.Serif == false && off.Grain == true && off.Zen == false);
 
         C("later lines override earlier ones", Parse("toc=1\ntoc=0\nfont=14\nfont=20").Toc == false && Parse("font=14\nfont=20").Font == 20f);
         C("invalid hints keep the earlier valid value", Parse("hints=1\nhints=4\nhints=-1\nhints=x").Hints == 1 && Parse("hints=9").Hints == null);
@@ -47,6 +47,10 @@ internal static class AppConfigTests
             new[] { @"C:\a.md", @"C:\b.md", @"C:\c.md" }, 2, new[] { @"C:\a.md", @"C:\b.md" });
         string expected = "theme=dark\ntoc=0\nhints=3\nserif=1\nzen=0\nfont=16.5\nwin=140,90,766,900,0\nrecent1=C:\\a.md\nrecent2=C:\\b.md\ntabs=C:\\a.md|C:\\b.md\n";
         C("format writes keys in the fixed order", text == expected, text.Replace("\n", "\\n"));
+        string grainOff = AppConfig.Format(true, false, 3, true, false, 16.5f, "140,90,766,900,0",
+            new[] { @"C:\a.md", @"C:\b.md", @"C:\c.md" }, 2, new[] { @"C:\a.md", @"C:\b.md" }, null, null, null, false);
+        C("format writes grain=0 only when the texture is turned off",
+            grainOff.Contains("grain=0") && !text.Contains("grain="), grainOff.Replace("\n", "\\n"));
         // E22：文件里的数字固定用 '.' 作小数点、ASCII '-' 作负号，与进程区域设置无关（多显示器下窗口坐标可为负）。
         string negative = WindowGeometry.FormatBounds(new RECT { L = -1280, T = -8, R = -280, B = 792 }, false);
         C("config numbers are culture independent", negative == "-1280,-8,1000,800,0"
@@ -90,7 +94,7 @@ internal static class AppConfigTests
 
         var backTabs = new List<string>(); var backRecent = new List<string>();
         var back = AppConfig.Parse(text.Split('\n'), Exists, backTabs, backRecent);
-        C("format then parse round-trips", back.ThemeDark == true && back.Toc == false && back.Hints == 3 && back.Serif == true && back.Zen == false
+        C("format then parse round-trips", back.ThemeDark == true && back.Toc == false && back.Hints == 3 && back.Serif == true && back.Zen == false && back.Grain == null
             && back.Font == 16.5f && back.Bounds is { L: 140, T: 90, R: 906, B: 990 } && !back.Maximized
             && backRecent.SequenceEqual(new[] { @"C:\a.md", @"C:\b.md" }) && backTabs.SequenceEqual(new[] { @"C:\a.md", @"C:\b.md" }));
     }

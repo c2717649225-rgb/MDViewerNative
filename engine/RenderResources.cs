@@ -40,6 +40,10 @@ internal sealed unsafe class RenderResources : IDisposable
     private const string SansFamily = "Segoe UI";
     static string BodyFam() => SerifMode && SerifFamily != null ? SerifFamily : SansFamily;
 
+    // U2b 纸纹开关(grain 命令/配置)：false 时 PaintPaperGrain 直接跳过；灯下暖光与暗角不受影响。
+    public static bool PaperGrain { get; private set; } = true;
+    internal static void SetPaperGrain(bool enabled) => PaperGrain = enabled;
+
     // v2.2 §3.1(B2):行高=1.75×字号(28 DIP @16,恒比缩放在 12/20/24 各档都不裁字;rhythm 段距与 SetLineSpacing 共用)
     // U3:行高倍数随版式(classic 1.75、desk 1.9)。
     public static float LineH(float bs) => Reading.LineRatio * bs;
@@ -258,7 +262,7 @@ internal sealed unsafe class RenderResources : IDisposable
     // 纸纹铺在正文之下，固定在视口上（不随滚动）；高对比度与打印时不画。
     public static unsafe void PaintPaperGrain(float left, float top, float right, float bottom)
     {
-        if (ActivePaper is not PaperColors p || HighContrast || p.Grain <= 0f) return;
+        if (ActivePaper is not PaperColors p || HighContrast || p.Grain <= 0f || !PaperGrain) return;
         int n = PaperTexture.GrainSize;
         nint bmp = p.Dark ? TextureBitmap(ref _grainDark, () => PaperTexture.Grain(true), n, n) : TextureBitmap(ref _grainLight, () => PaperTexture.Grain(false), n, n);
         if (bmp == 0) return;
@@ -517,6 +521,28 @@ internal sealed unsafe class RenderResources : IDisposable
     {
         PBind(Rt, hdc, r);
         ((delegate* unmanaged[Stdcall]<nint, float, float, void>)(*(IntPtr*)((nint)(*(IntPtr*)Rt) + (nint)51 * (nint)sizeof(nint))))(Rt, 96f, 96f);
+    }
+
+    // 滚动帧优化：正文/书签绳/页脚共享同一次 BeginDraw/EndDraw。分层探针实测 cord/footer 各 ~4ms，
+    // 主要来自逐层冲刷——DCRT 每次 EndDraw 都把整幅表面提交到 DC，小层独立成批等于多付几次全量提交。
+    // 批内某层抛异常时由调用方 OnPaint 收尾（EndBatch 幂等：BatchOpen=false 后再调不做任何事）。
+    public static bool BatchOpen { get; private set; }
+
+    public static unsafe void BeginBatch(nint dc, in RECT client, float scale)
+    {
+        RECT r = client;
+        PBind(Rt, dc, &r);
+        ((delegate* unmanaged[Stdcall]<nint, float, float, void>)(*(IntPtr*)((nint)(*(IntPtr*)Rt) + (nint)51 * (nint)sizeof(nint))))(Rt, 96f * scale, 96f * scale);
+        PBegin(Rt);
+        BatchOpen = true;
+    }
+
+    public static unsafe void EndBatch()
+    {
+        if (!BatchOpen) return;
+        ulong a = 0, b = 0;
+        _ = PEnd(Rt, &a, &b);
+        BatchOpen = false;
     }
 
     public unsafe static void PFillExternal(float x1, float y1, float x2, float y2, nint brush)
